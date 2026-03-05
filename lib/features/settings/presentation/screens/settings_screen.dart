@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:subtrack_pro/controllers/app_controller.dart';
+import 'package:subtrack_pro/core/services/format_service.dart';
+import 'package:subtrack_pro/features/auth/presentation/screens/auth_screen.dart';
+import 'package:subtrack_pro/features/home/presentation/screens/home_screen.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/widgets/app_widgets.dart';
@@ -154,7 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Sign Out',
                 isDestructive: false,
                 iconColor: AppColors.textSecondaryLight,
-                onTap: () => Navigator.pushReplacementNamed(context, '/auth'),
+                onTap: () => AppController.to.signOutUser(),
               ),
               Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
               SettingsTile(
@@ -283,66 +288,88 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userData = AppController.to.userData.value;
+    final isPremium = AppController.to.isPremium.value;
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        boxShadow: AppShadows.primary,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.25),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.5)),
-            ),
-            child: const Center(
-              child: Text('I',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900)),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Ismail Khan',
+    return GestureDetector(
+      onTap: (){
+        if(userData==null){
+          Get.offAll(()=>AuthScreen());
+
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: AppColors.primaryGradient,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          boxShadow: AppShadows.primary,
+        ),
+        child: Row(
+          children: [
+
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.25),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.5)),
+              ),
+              child:  Center(
+                child: Text(userData==null?'G':FormatService.getUserInitials(userData.name),
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700)),
-                const Text('ismail@example.com',
-                    style: TextStyle(color: Colors.white70, fontSize: 13)),
-                const SizedBox(height: 6),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(AppRadius.full),
-                  ),
-                  child: const Text('Free Plan',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900)),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   Text(userData==null?'Guest User':userData.name,
                       style: TextStyle(
                           color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600)),
-                ),
-              ],
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700)),
+                  if(userData!=null)...[
+                    const Text('ismail@example.com',
+                        style: TextStyle(color: Colors.white70, fontSize: 13))
+                  ],
+                  const SizedBox(height: 6),
+
+
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                    ),
+                    child:  Text(userData==null?'Login/Register':isPremium?'Premium User':'Free Plan',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined, color: Colors.white70, size: 20),
-            onPressed: () {},
-          ),
-        ],
+            IconButton(
+              icon:  Icon(userData==null?Icons.arrow_forward_ios:Icons.edit_outlined, color: Colors.white70, size: 20),
+              onPressed: () {
+
+                if(userData==null){
+                  Get.offAll(()=>AuthScreen());
+                }else{
+                  // will navigate to profile edit
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

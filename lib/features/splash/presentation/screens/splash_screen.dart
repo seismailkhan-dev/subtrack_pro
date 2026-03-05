@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:subtrack_pro/controllers/app_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/app_router.dart';
 
@@ -64,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen>
     _loaderCtrl.forward();
     await Future.delayed(const Duration(milliseconds: 1400));
     if (mounted) {
-      Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+     AppController.to.checkUserSession();
     }
   }
 

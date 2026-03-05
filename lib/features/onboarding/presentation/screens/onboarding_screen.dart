@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:subtrack_pro/core/services/sharedpref_service.dart';
+import 'package:subtrack_pro/features/auth/presentation/screens/auth_screen.dart';
+import 'package:subtrack_pro/features/home/presentation/screens/home_screen.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/app_router.dart';
 import '../../../../shared/widgets/app_widgets.dart';
@@ -102,24 +106,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             AppButton(
                               label: 'Get Started',
                               icon: Icons.arrow_forward_rounded,
-                              onTap: () => Navigator.pushReplacementNamed(
-                                  context, AppRoutes.home),
+                              onTap: () => navigate(),
                             ),
-                            const SizedBox(height: 12),
-                            AppButton(
-                              label: 'Login',
-                              isOutlined: true,
-                              onTap: () => Navigator.pushReplacementNamed(
-                                  context, AppRoutes.auth),
-                            ),
+                            // const SizedBox(height: 12),
+                            // AppButton(
+                            //   label: 'Login',
+                            //   isOutlined: true,
+                            //   onTap: () => navigate(),
+                            // ),
                           ],
                         )
                       : Row(
                           key: const ValueKey('steps'),
                           children: [
                             TextButton(
-                              onPressed: () => Navigator.pushReplacementNamed(
-                                  context, AppRoutes.auth),
+                              onPressed: () => navigate(),
                               child: const Text(
                                 'Skip',
                                 style: TextStyle(
@@ -151,7 +152,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
+
+  navigate() async {
+    await SharedPrefService.saveIsSkipOnboarding();
+    Get.offAll(()=>AuthScreen());
+  }
 }
+
+
 
 class _OnboardPage {
   final IconData icon;
