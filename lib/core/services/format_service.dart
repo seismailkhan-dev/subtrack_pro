@@ -4,6 +4,15 @@ import 'package:intl/intl.dart';
 class FormatService {
 
 
+  static DateTime parseYMD(String date) {
+    final parts = date.split('-');
+
+    return DateTime(
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+      int.parse(parts[2]),
+    );
+  }
 
   static String getUserInitials(String? fullName) {
     if (fullName == null || fullName.trim().isEmpty) return 'N/A';

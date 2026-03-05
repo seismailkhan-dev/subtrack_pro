@@ -31,11 +31,12 @@ class AppController extends GetxController{
       return;
     }
 
-    // 3️⃣ User not logged in
-    if (hasLoggedInBefore.value) {
-      Get.offAll(() => const AuthScreen());
-      return;
-    }
+    /// will implement in next version
+    // if (hasLoggedInBefore.value) {
+    //   Get.offAll(() => const AuthScreen());
+    //   return;
+    // }
+
     await loadUserData();
     Get.offAll(() => const HomeScreen());
     return;
