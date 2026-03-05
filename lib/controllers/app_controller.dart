@@ -13,6 +13,7 @@ class AppController extends GetxController{
   static AppController get to => Get.find();
 
   final isPremium = false.obs;
+  final isLoggedInUser = false.obs;
   final hasLoggedInBefore = false.obs;
 
   Rxn<UserModel> userData = Rxn<UserModel>();
@@ -21,41 +22,23 @@ class AppController extends GetxController{
 
 
   Future<void> checkUserSession() async {
-    final bool isLoggedIn = SharedPrefService.getIsLoggedIn();
+    isLoggedInUser.value = SharedPrefService.getIsLoggedIn();
+    hasLoggedInBefore.value = SharedPrefService.getHasLoggedInBefore();
     final bool isSkipOnboarding = SharedPrefService.getIsSkipOnboarding();
-    final bool isGuestUser = SharedPrefService.getIsGuestUser();
-    final bool hasLoggedInBeforeFlag = SharedPrefService.getHasLoggedInBefore();
 
-    // 1️⃣ Show onboarding for first-time users
     if (!isSkipOnboarding) {
       Get.offAll(() => const OnboardingScreen());
       return;
     }
 
-    // 2️⃣ User is currently logged in → load their data
-    if (isLoggedIn) {
-      await loadUserData();
-      Get.offAll(() => const HomeScreen());
-      return;
-    }
-
     // 3️⃣ User not logged in
-    if (hasLoggedInBeforeFlag) {
-      hasLoggedInBefore.value = hasLoggedInBeforeFlag;
-      // Previously logged-in user → force login even offline
+    if (hasLoggedInBefore.value) {
       Get.offAll(() => const AuthScreen());
       return;
     }
-
-    if (isGuestUser) {
-      // First-time guest or returning guest → load local guest data
-      await loadUserData();
-      Get.offAll(() => const HomeScreen());
-      return;
-    }
-
-    // 4️⃣ Never logged in / never guest → show AuthScreen
-    Get.offAll(() => const AuthScreen());
+    await loadUserData();
+    Get.offAll(() => const HomeScreen());
+    return;
   }
 
 

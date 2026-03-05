@@ -155,7 +155,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   navigate() async {
     await SharedPrefService.saveIsSkipOnboarding();
-    Get.offAll(()=>AuthScreen());
+    Get.offAll(()=>HomeScreen());
   }
 }
 
