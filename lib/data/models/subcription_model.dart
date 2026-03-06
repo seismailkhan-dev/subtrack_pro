@@ -45,6 +45,18 @@ class SubscriptionDataModel {
   Color get brandColorAsColor => Color(brandColor);
   Color get categoryColorAsColor => Color(categoryColor);
 
+  double get monthlyEquivalent {
+    if (billingCycle == 'weekly') return price * 4.3333;
+    if (billingCycle == 'yearly') return price / 12;
+    return price; // monthly default
+  }
+
+  double get yearlyEquivalent {
+    if (billingCycle == 'weekly') return price * 52;
+    if (billingCycle == 'monthly') return price * 12;
+    return price; // yearly default
+  }
+
   SubscriptionDataModel copyWith({
     int? id,
     String? name,

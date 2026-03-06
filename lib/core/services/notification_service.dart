@@ -1,0 +1,154 @@
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:subtrack_pro/data/models/subcription_model.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:io' show Platform;
+
+class NotificationService {
+  static final NotificationService _instance = NotificationService._internal();
+  factory NotificationService() => _instance;
+  NotificationService._internal();
+
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  bool _isInitialized = false;
+
+  Future<void> init() async {
+    if (_isInitialized) return;
+
+    tz.initializeTimeZones();
+
+    // Android Initialization
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    // iOS Initialization
+    const DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+
+    const InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsDarwin,
+    );
+
+    await _flutterLocalNotificationsPlugin.initialize(
+      settings: initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        debugPrint('Notification clicked: ${response.payload}');
+      },
+    );
+
+    _isInitialized = true;
+  }
+
+  Future<void> requestPermissions() async {
+    if (kIsWeb) return;
+    
+    // Request Android 13+ permission
+    if (Platform.isAndroid) {
+      final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+          _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
+      await androidImplementation?.requestNotificationsPermission();
+    }
+  }
+
+  Future<void> scheduleNotification(SubscriptionDataModel subscription) async {
+    if (subscription.id == null) return;
+    
+    // Calculate trigger date
+    final triggerDate = subscription.nextBillingDate
+        .subtract(Duration(days: subscription.reminderDays));
+
+    // If trigger date has already passed, we don't alert retroactively
+    if (triggerDate.isBefore(DateTime.now())) return;
+
+    final tz.TZDateTime scheduledDate = tz.TZDateTime.from(triggerDate, tz.local);
+
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'subscription_reminders', // channel id
+      'Subscription Reminders', // channel name
+      channelDescription: 'Notifications for upcoming subscription renewals',
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    );
+    const DarwinNotificationDetails darwinPlatformChannelSpecifics =
+        DarwinNotificationDetails();
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: darwinPlatformChannelSpecifics,
+    );
+
+    final title = 'Upcoming Renewal: ${subscription.name}';
+    final body =
+        'Your ${subscription.billingCycle} subscription for ${subscription.name} (\$${subscription.price.toStringAsFixed(2)}) is due on ${subscription.nextBillingDate.month}/${subscription.nextBillingDate.day}.';
+
+    await _flutterLocalNotificationsPlugin.zonedSchedule(
+      id: subscription.id!,
+      title: title,
+      body: body,
+      scheduledDate: scheduledDate,
+      notificationDetails: platformChannelSpecifics,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      matchDateTimeComponents: subscription.billingCycle.toLowerCase() == 'monthly'
+          ? DateTimeComponents.dayOfMonthAndTime
+          : (subscription.billingCycle.toLowerCase() == 'yearly'
+              ? DateTimeComponents.dateAndTime
+              : DateTimeComponents.dayOfWeekAndTime),
+    );
+  }
+
+  Future<void> cancelNotification(int id) async {
+    await _flutterLocalNotificationsPlugin.cancel(id: id);
+  }
+
+  // TEST FUNCTION: Schedule notification 10 minutes from now
+  Future<void> testScheduleNotification(SubscriptionDataModel subscription) async {
+    if (subscription.id == null) return;
+    
+    // Test: exactly 10 minutes from now
+    final triggerDate = DateTime.now().add(const Duration(minutes: 1));
+
+    final tz.TZDateTime scheduledDate = tz.TZDateTime.from(triggerDate, tz.local);
+
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'subscription_reminders_test', // channel id
+      'Subscription Reminders Test', // channel name
+      channelDescription: 'Test notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    );
+    const DarwinNotificationDetails darwinPlatformChannelSpecifics =
+        DarwinNotificationDetails();
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: darwinPlatformChannelSpecifics,
+    );
+
+    final title = 'TEST: Renewal for ${subscription.name}';
+    final body =
+        'This is a test notification for ${subscription.name} scheduled 10 minutes from creation.';
+
+    await _flutterLocalNotificationsPlugin.zonedSchedule(
+      id: subscription.id! + 10000,
+      title: title,
+      body: body,
+      scheduledDate: scheduledDate,
+      notificationDetails: platformChannelSpecifics,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+    );
+  }
+}

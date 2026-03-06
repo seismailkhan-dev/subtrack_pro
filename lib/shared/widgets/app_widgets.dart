@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:subtrack_pro/core/services/format_service.dart';
 import 'package:subtrack_pro/data/models/subcription_model.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -219,7 +220,10 @@ class SubscriptionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final days = 2;
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final billingDate = DateTime(subscription.nextBillingDate.year, subscription.nextBillingDate.month, subscription.nextBillingDate.day);
+    final days = billingDate.difference(todayDate).inDays;
     final brandColor = subscription.brandColorAsColor;
     final categoryColor = subscription.categoryColorAsColor;
 
@@ -362,7 +366,10 @@ class _DaysBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     Color color;
     String label;
-    if (days == 0) {
+    if (days < 0) {
+      color = AppColors.danger;
+      label = 'Overdue by ${days.abs()}d';
+    } else if (days == 0) {
       color = AppColors.danger;
       label = 'Today';
     } else if (days == 1) {
@@ -736,7 +743,7 @@ class SheetHandle extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class SubLogo extends StatelessWidget {
-  final SubscriptionModel subscription;
+  final SubscriptionDataModel subscription;
   final double size;
 
   const SubLogo({super.key, required this.subscription, this.size = 52});
@@ -747,17 +754,17 @@ class SubLogo extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: subscription.brandColor.withOpacity(0.15),
+        color: Color(subscription.brandColor).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(size * 0.3),
         border: Border.all(
-          color: subscription.brandColor.withOpacity(0.3),
+          color: Color(subscription.brandColor).withValues(alpha: 0.3),
         ),
       ),
       child: Center(
         child: Text(
-          subscription.logoLetter,
+          FormatService.getLogoName(subscription.name),
           style: TextStyle(
-            color: subscription.brandColor,
+            color: Color(subscription.brandColor),
             fontSize: size * 0.38,
             fontWeight: FontWeight.w800,
           ),

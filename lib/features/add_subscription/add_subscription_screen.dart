@@ -9,6 +9,8 @@ import '../../shared/widgets/app_toggle_row.dart';
 import '../../shared/widgets/app_widgets.dart';
 import '../../shared/input_fields/custom_dropdown.dart';
 import '../../shared/widgets/custom_snack_bar.dart';
+import '../../core/services/format_service.dart';
+import '../../data/models/subcription_model.dart';
 
 class AddSubscriptionScreen extends StatefulWidget {
   const AddSubscriptionScreen({super.key});
@@ -22,8 +24,27 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
   final subController = Get.put(AddSubscriptionController());
   final _form = GlobalKey<FormState>();
 
-
-
+  @override
+  void initState() {
+    super.initState();
+    final args = Get.arguments;
+    if (args != null && args is SubscriptionDataModel) {
+      // Delay to avoid setting state during build if GetX tries to update immediately
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        subController.initForEdit(args);
+      });
+    } else {
+      // Reset if it was previously editing
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        subController.editingSubscription.value = null;
+        subController.subNameTextController.clear();
+        subController.priceTextController.clear();
+        subController.notesTextController.clear();
+        subController.startDateTextController.text = FormatService.ymd(DateTime.now());
+        subController.calculateNextBillingDate();
+      });
+    }
+  }
   void _save() async {
     if (!(_form.currentState?.validate() ?? false)) return;
     final price = double.tryParse(subController.priceTextController.text);
@@ -112,13 +133,13 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Subscription'),
+        title: Obx(() => Text(subController.editingSubscription.value == null ? 'Add Subscription' : 'Edit Subscription')),
         actions: [
           TextButton(
             onPressed: _save,
-            child: const Text('Save',
-                style: TextStyle(
-                    color: AppColors.primary, fontWeight: FontWeight.w700)),
+            child: Obx(() => Text(subController.editingSubscription.value == null ? 'Save' : 'Update',
+                style: const TextStyle(
+                    color: AppColors.primary, fontWeight: FontWeight.w700))),
           ),
         ],
       ),
@@ -393,12 +414,12 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                   ),
                   const SizedBox(height: 28),
 
-                  AppButton(
-                    label: 'Save Subscription',
+                  Obx(() => AppButton(
+                    label: subController.editingSubscription.value == null ? 'Save Subscription' : 'Update Subscription',
                     icon: Icons.check_rounded,
                     isLoading: subController.isSaving.value,
                     onTap: _save,
-                  ),
+                  )),
                   const SizedBox(height: 20),
                 ],
               );

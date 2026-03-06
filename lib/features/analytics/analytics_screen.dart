@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:subtrack_pro/core/services/format_service.dart';
+import 'package:subtrack_pro/data/models/subcription_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
 import '../../shared/widgets/app_widgets.dart';
@@ -19,7 +21,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final subs = AppConstants.mockSubscriptions;
-    final totalMonthly = subs.fold(0.0, (s, e) => s + e.monthlyEquivalent);
+    final totalMonthly = 234;
 
     return Scaffold(
       appBar: AppBar(
@@ -116,10 +118,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             // Most Expensive
             Text('Most Expensive', style: theme.textTheme.headlineSmall),
             const SizedBox(height: 12),
-            ...subs
-                .sorted((a, b) => b.price.compareTo(a.price))
-                .take(3)
-                .map((sub) => _ExpensiveRow(sub: sub, isDark: isDark)),
+            // ...subs
+            //     .sorted((a, b) => double.tryParse(b?.price??'').compareTo(a.price))
+            //     .take(3)
+            //     .map((sub) => _ExpensiveRow(sub: sub, isDark: isDark)),
             const SizedBox(height: 16),
 
             // Savings Insight Card
@@ -322,7 +324,7 @@ class _CategoryDonut extends StatelessWidget {
 }
 
 class _ExpensiveRow extends StatelessWidget {
-  final SubscriptionModel sub;
+  final SubscriptionDataModel sub;
   final bool isDark;
   const _ExpensiveRow({required this.sub, required this.isDark});
 
@@ -341,8 +343,8 @@ class _ExpensiveRow extends StatelessWidget {
         children: [
           Container(
             width: 40, height: 40,
-            decoration: BoxDecoration(color: sub.brandColor.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
-            child: Center(child: Text(sub.logoLetter, style: TextStyle(color: sub.brandColor, fontWeight: FontWeight.w800, fontSize: 16))),
+            decoration: BoxDecoration(color: Color(sub.brandColor).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+            child: Center(child: Text(FormatService.getLogoName(sub.name), style: TextStyle(color: Color(sub.brandColor), fontWeight: FontWeight.w800, fontSize: 16))),
           ),
           const SizedBox(width: 12),
           Expanded(child: Text(sub.name, style: theme.textTheme.titleSmall)),

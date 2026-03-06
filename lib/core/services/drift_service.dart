@@ -97,6 +97,32 @@ class DriftService {
     );
   }
 
+  Future<bool> updateSubscription(SubscriptionDataModel sub) {
+    return _db.updateSubscription(
+      SubscriptionsTableCompanion(
+        id: Value(sub.id!),
+        userId: Value(sub.userId),
+        subscriptionId: Value(sub.subscriptionId),
+        name: Value(sub.name),
+        price: Value(sub.price),
+        currency: Value(sub.currency),
+        billingCycle: Value(sub.billingCycle),
+        category: Value(sub.category),
+        brandColor: Value(sub.brandColor),
+        categoryColor: Value(sub.categoryColor),
+        startDate: Value(sub.startDate),
+        nextBillingDate: Value(sub.nextBillingDate),
+        autoRenew: Value(sub.autoRenew),
+        freeTrial: Value(sub.freeTrial),
+        reminderDays: Value(sub.reminderDays),
+        notes: Value(sub.notes),
+        createdAt: Value(sub.createdAt),
+        updatedAt: Value(sub.updatedAt),
+        isSynced: Value(sub.isSynced),
+      ),
+    );
+  }
+
   Future<List<SubscriptionDataModel>> getSubscriptions() async {
     final data = await _db.getAllSubscriptions();
 

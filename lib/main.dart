@@ -7,11 +7,15 @@ import 'controllers/app_controller.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/app_router.dart';
 import 'firebase_options.dart';
+import 'core/services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPrefService.init();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.firebaseOptions);
+
+  await NotificationService().init();
+  await NotificationService().requestPermissions();
 
 
   Get.put(AppController(),permanent: true);

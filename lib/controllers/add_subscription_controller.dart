@@ -10,9 +10,12 @@ import '../core/services/drift_service.dart';
 import 'package:get/get.dart';
 import '../data/models/subcription_model.dart';
 import '../shared/bottom_sheets/success_bottom.dart';
+import '../core/services/notification_service.dart';
 
 class AddSubscriptionController extends GetxController {
   final DriftService _drift = DriftService();
+
+  Rxn<SubscriptionDataModel> editingSubscription = Rxn<SubscriptionDataModel>();
 
 
   final subNameTextController = TextEditingController();
@@ -63,6 +66,33 @@ class AddSubscriptionController extends GetxController {
     nextBillingDateTextController.text = FormatService.ymd(nextBillingDate);
   }
 
+  void initForEdit(SubscriptionDataModel sub) {
+    editingSubscription.value = sub;
+    subNameTextController.text = sub.name;
+    priceTextController.text = sub.price.toString();
+    notesTextController.text = sub.notes ?? '';
+    startDateTextController.text = FormatService.ymd(sub.startDate);
+    nextBillingDateTextController.text = FormatService.ymd(sub.nextBillingDate);
+    
+    currency.value = sub.currency;
+    category.value = sub.category;
+    autoRenew.value = sub.autoRenew;
+    freeTrial.value = sub.freeTrial;
+    reminderDays.value = sub.reminderDays;
+    
+    if (sub.billingCycle == 'weekly') {
+      cycleIndex.value = 0;
+    } else if (sub.billingCycle == 'monthly') {
+      cycleIndex.value = 1;
+    } else {
+      cycleIndex.value = 2;
+    }
+    
+    brandColor.value = sub.brandColor;
+    categoryColor.value = sub.categoryColor;
+  }
+
+
 
   void changeCurrency(String value){
     currency.value = value;
@@ -108,7 +138,7 @@ class AddSubscriptionController extends GetxController {
   Future<void> addSubscription({required BuildContext context}) async {
 
     try{
-      LoadingService.show(message: 'Adding Subscription..');
+      LoadingService.show(message: editingSubscription.value == null ? 'Adding Subscription..' : 'Updating Subscription..');
       String billingCycle =' ';
       if(cycleIndex.value==0){
         billingCycle = 'weekly';
@@ -122,40 +152,88 @@ class AddSubscriptionController extends GetxController {
       final nextBillingDate = FormatService.parseYMD(nextBillingDateTextController.text);
 
 
-      final sub = SubscriptionDataModel(
-        subscriptionId: Uuid().v4(),
-        name: subNameTextController.text,
-        price: double.tryParse(priceTextController.text)??0,
-        currency: currency.value,
-        billingCycle: billingCycle,
-        category: category.value,
-        brandColor: brandColor.value,
-        categoryColor: categoryColor.value,
-        startDate: startDate,
-        nextBillingDate: nextBillingDate,
-        autoRenew: autoRenew.value,
-        freeTrial: freeTrial.value,
-        reminderDays: reminderDays.value,
-        notes: notesTextController.text,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        isSynced: false,
-      );
+      bool success = false;
+      if (editingSubscription.value == null) {
+        // Create new
+        final sub = SubscriptionDataModel(
+          subscriptionId: Uuid().v4(),
+          name: subNameTextController.text,
+          price: double.tryParse(priceTextController.text)??0,
+          currency: currency.value,
+          billingCycle: billingCycle,
+          category: category.value,
+          brandColor: brandColor.value,
+          categoryColor: categoryColor.value,
+          startDate: startDate,
+          nextBillingDate: nextBillingDate,
+          autoRenew: autoRenew.value,
+          freeTrial: freeTrial.value,
+          reminderDays: reminderDays.value,
+          notes: notesTextController.text,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isSynced: false,
+        );
 
-      final insertedId = await _drift.saveSubscription(sub);
+        final insertedId = await _drift.saveSubscription(sub);
+        success = insertedId > 0;
+        
+        if (success) {
+          final subWithId = sub.copyWith(id: insertedId);
+          await NotificationService().scheduleNotification(subWithId);
+          // TEST: Schedule 10 minutes from now
+          await NotificationService().testScheduleNotification(subWithId);
+        }
+      } else {
+        // Update existing
+        final existingSub = editingSubscription.value!;
+        final sub = SubscriptionDataModel(
+          id: existingSub.id, // Must pass DB generated ID to update
+          userId: existingSub.userId,
+          subscriptionId: existingSub.subscriptionId,
+          name: subNameTextController.text,
+          price: double.tryParse(priceTextController.text)??0,
+          currency: currency.value,
+          billingCycle: billingCycle,
+          category: category.value,
+          brandColor: brandColor.value,
+          categoryColor: categoryColor.value,
+          startDate: startDate,
+          nextBillingDate: nextBillingDate,
+          autoRenew: autoRenew.value,
+          freeTrial: freeTrial.value,
+          reminderDays: reminderDays.value,
+          notes: notesTextController.text,
+          createdAt: existingSub.createdAt, // Keep original creation date
+          updatedAt: DateTime.now(), // update time
+          isSynced: false, // Needs to be synced to Firebase again
+        );
+        success = await _drift.updateSubscription(sub);
+        
+        if (success && sub.id != null) {
+          await NotificationService().cancelNotification(sub.id!);
+          // Also cancel the test notification if it exists (using the +10000 offset we created)
+          await NotificationService().cancelNotification(sub.id! + 10000);
+          
+          await NotificationService().scheduleNotification(sub);
+          // TEST: Schedule 10 minutes from now
+          await NotificationService().testScheduleNotification(sub);
+        }
+      }
+      
       LoadingService.hide();
-      if (insertedId > 0) {
+      if (success) {
 
         try{
         await  GetSubscriptionsController.to.fetchSubscriptions();
         }catch(e){
           print(e);
         }
-        showSuccessBottomSheet(context: context, title: 'Subscription has been added successfully');
+        showSuccessBottomSheet(context: context, title: editingSubscription.value == null ? 'Subscription has been added successfully' : 'Subscription has been updated successfully');
       } else {
         customSnackBar(
           "Error",
-          "Failed to add subscription",
+          "Failed to save subscription",
         );
       }
     }catch(e){

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:get/get.dart';
 import 'package:subtrack_pro/core/services/format_service.dart';
 import 'package:subtrack_pro/data/models/subcription_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
 import '../../shared/widgets/app_widgets.dart';
+import '../add_subscription/add_subscription_screen.dart';
+import '../../controllers/get_subscription_controller.dart';
 
 class SubscriptionDetailScreen extends StatelessWidget {
   final SubscriptionDataModel subscription;
@@ -52,7 +55,7 @@ class SubscriptionDetailScreen extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            FormatService.getUserInitials(subscription.name),
+                            FormatService.getLogoName(subscription.name),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 28,
@@ -146,11 +149,11 @@ class SubscriptionDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 28),
 
-                // Cancel Button
+                // Delete Button
                 AppButton(
-                  label: 'Cancel Subscription',
+                  label: 'Delete Subscription',
                   color: AppColors.danger,
-                  onTap: () => _showCancelDialog(context),
+                  onTap: () => _showDeleteDialog(context),
                 ),
               ]),
             ),
@@ -190,7 +193,11 @@ class SubscriptionDetailScreen extends StatelessWidget {
             SettingsTile(
               icon: Icons.edit_outlined,
               title: 'Edit Subscription',
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context); // close sheet
+                // Navigate to AddSubscriptionScreen passing the model as argument
+                Get.to(() => const AddSubscriptionScreen(), arguments: subscription);
+              },
             ),
             SettingsTile(
               icon: Icons.share_outlined,
@@ -201,7 +208,10 @@ class SubscriptionDetailScreen extends StatelessWidget {
               icon: Icons.delete_outline_rounded,
               title: 'Delete',
               isDestructive: true,
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context); // close bottom sheet
+                _showDeleteDialog(context); // show confirmation before deleting
+              },
             ),
           ],
         ),
@@ -209,26 +219,30 @@ class SubscriptionDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showCancelDialog(BuildContext context) {
+  void _showDeleteDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.xl)),
-        title: const Text('Cancel Subscription?'),
+        title: const Text('Delete Subscription?'),
         content: Text(
-            'Are you sure you want to cancel ${subscription.name}? This action cannot be undone.'),
+            'Are you sure you want to delete ${subscription.name}? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Keep It'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
+            onPressed: () async {
+              Navigator.pop(context); // close dialog
+              if (subscription.id != null) {
+                await GetSubscriptionsController.to.deleteSubscription(subscription.id!);
+                await GetSubscriptionsController.to.fetchSubscriptions(); // Refresh home screen
+              }
+              Get.back(); // navigate back to previous screen
             },
-            child: const Text('Cancel Sub',
+            child: const Text('Delete Sub',
                 style: TextStyle(color: AppColors.danger)),
           ),
         ],
@@ -245,6 +259,11 @@ class _PriceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final billingDate = DateTime(subscription.nextBillingDate.year, subscription.nextBillingDate.month, subscription.nextBillingDate.day);
+    final days = billingDate.difference(todayDate).inDays;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -287,7 +306,7 @@ class _PriceCard extends StatelessWidget {
                     style: theme.textTheme.titleLarge
                         ?.copyWith(fontWeight: FontWeight.w700),
                   ),
-                  _DaysBadge2(days: 2),
+                  _DaysBadge2(days: days),
                 ],
               ),
             ),
@@ -312,7 +331,8 @@ class _DaysBadge2 extends StatelessWidget {
   Widget build(BuildContext context) {
     Color color;
     String label;
-    if (days <= 1) { color = AppColors.danger; label = days == 0 ? 'Due Today' : 'Tomorrow'; }
+    if (days < 0) { color = AppColors.danger; label = 'Overdue by ${days.abs()}d'; }
+    else if (days <= 1) { color = AppColors.danger; label = days == 0 ? 'Due Today' : 'Tomorrow'; }
     else if (days <= 3) { color = AppColors.warning; label = 'in $days days'; }
     else { color = AppColors.accent; label = 'in $days days'; }
 

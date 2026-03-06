@@ -14,6 +14,15 @@ class FormatService {
     );
   }
 
+  static String getLogoName(String? fullName) {
+    if (fullName == null || fullName.trim().isEmpty) return 'N/A';
+
+    List<String> parts =
+    fullName.trim().split(' ').where((p) => p.isNotEmpty).toList();
+    String initials = parts.first[0].toUpperCase();
+    return initials;
+  }
+
   static String getUserInitials(String? fullName) {
     if (fullName == null || fullName.trim().isEmpty) return 'N/A';
 

@@ -318,7 +318,7 @@ class _ProfileCard extends StatelessWidget {
                 border: Border.all(color: Colors.white.withOpacity(0.5)),
               ),
               child:  Center(
-                child: Text(userData==null?'G':FormatService.getUserInitials(userData.name),
+                child: Text(userData==null?'G':FormatService.getLogoName(userData.name),
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,

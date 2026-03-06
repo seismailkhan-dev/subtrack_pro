@@ -36,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   int _tabIndex = 0;
-  List<SubscriptionModel> _subs = List.from(AppConstants.mockSubscriptions);
 
   final _screens = [
     null, // Home (this)
@@ -45,10 +44,6 @@ class _HomeScreenState extends State<HomeScreen> {
     const InsightsScreen(),
     const SettingsScreen(),
   ];
-
-  double get _totalMonthly =>
-      _subs.fold(0.0, (s, e) => s + e.monthlyEquivalent);
-  double get _totalYearly => _totalMonthly * 12;
 
   @override
   Widget build(BuildContext context) {
@@ -67,17 +62,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _HomeDashboard(
-        subs: _subs,
-        totalMonthly: _totalMonthly,
-        totalYearly: _totalYearly,
         onAddSub: () =>
             Navigator.pushNamed(context, AppRoutes.addSubscription).then((_) {
           setState(() {});
         }),
         onSubTap: (sub) =>
             Get.to((SubscriptionDetailScreen(subscription: sub,))),
-        onSubDelete: (sub) =>
-            setState(() => _subs.removeWhere((s) => s.id == sub.id)),
+        onSubDelete: (sub) {},
       ),
       floatingActionButton: _fab(),
       bottomNavigationBar: AppBottomNavBar(
@@ -97,17 +88,11 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _HomeDashboard extends StatelessWidget {
-  final List<SubscriptionModel> subs;
-  final double totalMonthly;
-  final double totalYearly;
   final VoidCallback onAddSub;
   final void Function(SubscriptionDataModel) onSubTap;
   final void Function(SubscriptionDataModel) onSubDelete;
 
   const _HomeDashboard({
-    required this.subs,
-    required this.totalMonthly,
-    required this.totalYearly,
     required this.onAddSub,
     required this.onSubTap,
     required this.onSubDelete,
@@ -119,10 +104,6 @@ class _HomeDashboard extends StatelessWidget {
     final getSubController = Get.find<GetSubscriptionsController>();
 
     final theme = Theme.of(context);
-    final upcoming = subs
-        .where((s) => s.daysUntilRenewal <= 7)
-        .toList()
-      ..sort((a, b) => a.daysUntilRenewal.compareTo(b.daysUntilRenewal));
 
     return CustomScrollView(
       slivers: [
@@ -183,7 +164,7 @@ class _HomeDashboard extends StatelessWidget {
               const SizedBox(height: 8),
 
               // ── Spend Cards ──────────────────────────────────────────
-              _SpendCard(monthly: totalMonthly, yearly: totalYearly),
+              const _SpendCard(),
               const SizedBox(height: 28),
 
               // ── Upcoming Renewals ─────────────────────────────────────
@@ -266,73 +247,78 @@ class _HomeDashboard extends StatelessWidget {
 }
 
 class _SpendCard extends StatelessWidget {
-  final double monthly;
-  final double yearly;
-
-  const _SpendCard({required this.monthly, required this.yearly});
+  const _SpendCard();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        boxShadow: AppShadows.primary,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Monthly Spend',
-              style: TextStyle(
-                  color: Colors.white.withOpacity(0.75), fontSize: 13)),
-          const SizedBox(height: 6),
-          Text(
-            '\$${monthly.toStringAsFixed(2)}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 38,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -1,
+    final subsController = GetSubscriptionsController.to;
+
+    return Obx(() {
+      final monthly = subsController.totalMonthlySpend.value;
+      final yearly = subsController.totalYearlySpend.value;
+      final subsCount = subsController.totalActiveSubs.value;
+      final avg = subsCount > 0 ? (monthly / subsCount) : 0.0;
+
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: AppColors.cardGradient,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          boxShadow: AppShadows.primary,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Monthly Spend',
+                style: TextStyle(
+                    color: Colors.white.withOpacity(0.75), fontSize: 13)),
+            const SizedBox(height: 6),
+            Text(
+              '\$${monthly.toStringAsFixed(2)}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 38,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            height: 1,
-            color: Colors.white.withOpacity(0.15),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              _MiniStat(
-                label: 'Yearly',
-                value: '\$${yearly.toStringAsFixed(0)}',
-              ),
-              Container(
-                  width: 1,
-                  height: 28,
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  color: Colors.white.withOpacity(0.2)),
-              _MiniStat(
-                label: 'Subscriptions',
-                value: '${AppConstants.mockSubscriptions.length}',
-              ),
-              Container(
-                  width: 1,
-                  height: 28,
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  color: Colors.white.withOpacity(0.2)),
-              _MiniStat(
-                label: 'Avg / Sub',
-                value:
-                    '\$${(monthly / AppConstants.mockSubscriptions.length).toStringAsFixed(0)}',
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+            const SizedBox(height: 16),
+            Container(
+              height: 1,
+              color: Colors.white.withOpacity(0.15),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                _MiniStat(
+                  label: 'Yearly',
+                  value: '\$${yearly.toStringAsFixed(0)}',
+                ),
+                Container(
+                    width: 1,
+                    height: 28,
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    color: Colors.white.withOpacity(0.2)),
+                _MiniStat(
+                  label: 'Subscriptions',
+                  value: '$subsCount',
+                ),
+                Container(
+                    width: 1,
+                    height: 28,
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    color: Colors.white.withOpacity(0.2)),
+                _MiniStat(
+                  label: 'Avg / Sub',
+                  value: '\$${avg.toStringAsFixed(0)}',
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 

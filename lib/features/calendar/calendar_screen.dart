@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:subtrack_pro/core/services/format_service.dart';
+import 'package:subtrack_pro/data/models/subcription_model.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
@@ -15,9 +17,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  List<SubscriptionModel> _eventsForDay(DateTime day) {
+  List<SubscriptionDataModel> _eventsForDay(DateTime day) {
     return AppConstants.mockSubscriptions.where((sub) {
-      final nb = sub.nextBilling;
+      final nb = sub.nextBillingDate;
       return nb.day == day.day && nb.month == day.month;
     }).toList();
   }
@@ -181,11 +183,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  List<SubscriptionModel> _thisMonthEvents() {
+  List<SubscriptionDataModel> _thisMonthEvents() {
     return AppConstants.mockSubscriptions
-        .where((s) => s.nextBilling.month == _focusedDay.month)
+        .where((s) => s.nextBillingDate.month == _focusedDay.month)
         .toList()
-      ..sort((a, b) => a.nextBilling.day.compareTo(b.nextBilling.day));
+      ..sort((a, b) => a.nextBillingDate.day.compareTo(b.nextBillingDate.day));
   }
 
   String _formatDate(DateTime d) {
@@ -196,7 +198,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 }
 
 class _CalendarSubCard extends StatelessWidget {
-  final SubscriptionModel sub;
+  final SubscriptionDataModel sub;
   final bool isDark;
   const _CalendarSubCard({required this.sub, required this.isDark});
 
@@ -208,24 +210,24 @@ class _CalendarSubCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [sub.brandColor.withOpacity(0.1), sub.brandColor.withOpacity(0.04)],
+          colors: [Color(sub.brandColor).withValues(alpha: 0.1), Color(sub.brandColor).withValues(alpha: 0.04)],
           begin: Alignment.topLeft, end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: sub.brandColor.withOpacity(0.25)),
+        border: Border.all(color: Color(sub.brandColor).withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
           Container(
             width: 44, height: 44,
-            decoration: BoxDecoration(color: sub.brandColor.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
-            child: Center(child: Text(sub.logoLetter, style: TextStyle(color: sub.brandColor, fontWeight: FontWeight.w900, fontSize: 18))),
+            decoration: BoxDecoration(color: Color(sub.brandColor).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+            child: Center(child: Text(FormatService.getLogoName(sub.name), style: TextStyle(color: Color(sub.brandColor), fontWeight: FontWeight.w900, fontSize: 18))),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(sub.name, style: theme.textTheme.titleSmall),
-              Text(sub.categoryLabel, style: theme.textTheme.bodySmall),
+              Text(sub.category, style: theme.textTheme.bodySmall),
             ]),
           ),
           Text('\$${sub.price.toStringAsFixed(2)}',
@@ -237,7 +239,7 @@ class _CalendarSubCard extends StatelessWidget {
 }
 
 class _MonthRow extends StatelessWidget {
-  final SubscriptionModel sub;
+  final SubscriptionDataModel sub;
   final bool isDark;
   const _MonthRow({required this.sub, required this.isDark});
 
@@ -256,14 +258,14 @@ class _MonthRow extends StatelessWidget {
         children: [
           Container(
             width: 36, height: 36,
-            decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-            child: Center(child: Text('${sub.nextBilling.day}',
+            decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+            child: Center(child: Text('${sub.nextBillingDate.day}',
                 style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800, fontSize: 14))),
           ),
           const SizedBox(width: 12),
           Container(width: 32, height: 32,
-            decoration: BoxDecoration(color: sub.brandColor.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-            child: Center(child: Text(sub.logoLetter, style: TextStyle(color: sub.brandColor, fontWeight: FontWeight.w800, fontSize: 12))),
+            decoration: BoxDecoration(color: Color(sub.brandColor).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
+            child: Center(child: Text(FormatService.getLogoName(sub.name), style: TextStyle(color: Color(sub.brandColor), fontWeight: FontWeight.w800, fontSize: 12))),
           ),
           const SizedBox(width: 10),
           Expanded(child: Text(sub.name, style: theme.textTheme.titleSmall)),
