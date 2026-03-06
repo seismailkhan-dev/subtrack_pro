@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:subtrack_pro/shared/cards/custom_card_theme.dart';
 import '../../controllers/add_subscription_controller.dart';
 import '../../core/theme/app_theme.dart';
@@ -47,6 +48,61 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
 
   }
 
+  Future<void> _pickBrandColor(BuildContext context) async {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    Color temp = Color(subController.brandColor.value);
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                borderRadius: BorderRadius.circular(AppRadius.xl),
+                border: Border.all(
+                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SheetHandle(),
+                  Text('Pick brand color', style: theme.textTheme.headlineSmall),
+                  const SizedBox(height: 16),
+                  ColorPicker(
+                    pickerColor: temp,
+                    onColorChanged: (c) => setState(() => temp = c),
+                    enableAlpha: false,
+                    displayThumbColor: true,
+                    portraitOnly: true,
+                    labelTypes: const [],
+                  ),
+                  const SizedBox(height: 14),
+                  AppButton(
+                    label: 'Use this color',
+                    onTap: () {
+                      subController.setBrandColor(temp);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
 
 
   @override
@@ -74,38 +130,6 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Logo Picker
-                  Center(
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.surfaceDark2
-                              : AppColors.surfaceLight2,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                            style: BorderStyle.solid,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_photo_alternate_outlined,
-                                color: AppColors.primary, size: 28),
-                            const SizedBox(height: 4),
-                            const Text('Logo',
-                                style: TextStyle(fontSize: 10, color: AppColors.primary)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-
                   // Service Name
                   AppTextField(
                     label: 'Service Name',
@@ -174,9 +198,83 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                       CustomDropdown(
                         value: subController.category.value,
                         items: AppConstants.categories.skip(1).toList(),
-                        onChanged: (v) => subController.changeCategory,
+                        onChanged: (v) =>
+                            subController.changeCategory(v ?? 'Other'),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Brand + Category Colors
+                  CustomCardTheme(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Colors', style: theme.textTheme.titleSmall),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            _ColorSwatch(
+                              color: Color(subController.brandColor.value),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Brand color',
+                                      style: theme.textTheme.labelLarge),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Used for the subscription icon',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => _pickBrandColor(context),
+                              child: const Text(
+                                'Pick',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Divider(
+                          height: 1,
+                          color:
+                              isDark ? AppColors.dividerDark : AppColors.dividerLight,
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            _ColorSwatch(
+                              color: Color(subController.categoryColor.value),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Category color',
+                                      style: theme.textTheme.labelLarge),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Auto-picked from category',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
 
@@ -224,7 +322,8 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                       title: 'Free Trial',
                       subtitle: 'Subscription starts automatically after the trial.',
                       value: subController.freeTrial.value,
-                      onChanged: (v) => subController.changeAutoRenew(v), context: context,
+                      onChanged: (v) => subController.changeFreeTrail(v),
+                      context: context,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -306,6 +405,28 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
             }
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ColorSwatch extends StatelessWidget {
+  final Color color;
+  const _ColorSwatch({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        ),
+        boxShadow: isDark ? null : AppShadows.sm,
       ),
     );
   }

@@ -31,6 +31,10 @@ class SubscriptionsTable extends Table {
   TextColumn get currency => text()(); // USD, EUR, etc.
   TextColumn get billingCycle => text()(); // weekly, monthly, yearly
   TextColumn get category => text()(); // entertainment, productivity etc
+  IntColumn get brandColor =>
+      integer().withDefault(const Constant(0xFF60A5FA))(); // light blue
+  IntColumn get categoryColor =>
+      integer().withDefault(const Constant(0xFF6366F1))();
   DateTimeColumn get startDate => dateTime()();
   DateTimeColumn get nextBillingDate => dateTime()();
   BoolColumn get autoRenew => boolean().withDefault(const Constant(true))();

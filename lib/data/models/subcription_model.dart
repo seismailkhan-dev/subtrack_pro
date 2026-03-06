@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class SubscriptionDataModel {
   final int? id;
@@ -9,6 +9,8 @@ class SubscriptionDataModel {
   final String currency;
   final String billingCycle;
   final String category;
+  final int brandColor;
+  final int categoryColor;
   final DateTime startDate;
   final DateTime nextBillingDate;
   final bool autoRenew;
@@ -28,6 +30,8 @@ class SubscriptionDataModel {
     required this.currency,
     required this.billingCycle,
     required this.category,
+    required this.brandColor,
+    required this.categoryColor,
     required this.startDate,
     required this.autoRenew,
     required this.freeTrial,
@@ -38,6 +42,9 @@ class SubscriptionDataModel {
     required this.isSynced, required this.nextBillingDate,
   });
 
+  Color get brandColorAsColor => Color(brandColor);
+  Color get categoryColorAsColor => Color(categoryColor);
+
   SubscriptionDataModel copyWith({
     int? id,
     String? name,
@@ -47,6 +54,8 @@ class SubscriptionDataModel {
     String? currency,
     String? billingCycle,
     String? category,
+    int? brandColor,
+    int? categoryColor,
     DateTime? startDate,
     DateTime? nextBillingDate,
     bool? autoRenew,
@@ -66,6 +75,8 @@ class SubscriptionDataModel {
       currency: currency ?? this.currency,
       billingCycle: billingCycle ?? this.billingCycle,
       category: category ?? this.category,
+      brandColor: brandColor ?? this.brandColor,
+      categoryColor: categoryColor ?? this.categoryColor,
       startDate: startDate ?? this.startDate,
       autoRenew: autoRenew ?? this.autoRenew,
       freeTrial: freeTrial ?? this.freeTrial,
@@ -75,29 +86,5 @@ class SubscriptionDataModel {
       updatedAt: updatedAt ?? this.updatedAt,
       isSynced: isSynced ?? this.isSynced, nextBillingDate: nextBillingDate?? this.nextBillingDate,
     );
-  }
-}
-
-
-extension SubscriptionDataModelFirebase on SubscriptionDataModel {
-  Map<String, dynamic> toFirebaseMap() {
-    return {
-      'id': id,
-      'subscriptionId': subscriptionId,
-      'userId': userId,
-      'name': name,
-      'price': price,
-      'currency': currency,
-      'billingCycle': billingCycle,
-      'category': category,
-      'startDate': Timestamp.fromDate(startDate),
-      'nextBillingDate': Timestamp.fromDate(nextBillingDate),
-      'autoRenew': autoRenew,
-      'reminderDays': reminderDays,
-      'notes': notes,
-      'createdAt': Timestamp.fromDate(createdAt),
-      'updatedAt': Timestamp.fromDate(updatedAt),
-      'isSynced': true, // mark as synced on upload
-    };
   }
 }

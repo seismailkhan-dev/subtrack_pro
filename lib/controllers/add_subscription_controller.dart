@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:subtrack_pro/controllers/get_subscription_controller.dart';
 import 'package:subtrack_pro/core/services/format_service.dart';
 import 'package:subtrack_pro/core/services/loading_service.dart';
+import 'package:subtrack_pro/core/constants/app_constants.dart';
 import 'package:subtrack_pro/shared/widgets/custom_snack_bar.dart';
 import 'package:uuid/uuid.dart';
 import '../core/services/date_picker_service.dart';
 import '../core/services/drift_service.dart';
 import 'package:get/get.dart';
-import 'dart:math';
 import '../data/models/subcription_model.dart';
 import '../shared/bottom_sheets/success_bottom.dart';
 
@@ -27,6 +27,12 @@ class AddSubscriptionController extends GetxController {
   RxBool freeTrial = false.obs;
   RxInt reminderDays = 3.obs;
   RxInt cycleIndex = 1.obs;
+
+  // Brand + Category colors
+  // Default: light blue
+  RxInt brandColor = 0xFF60A5FA.obs;
+  RxInt categoryColor =
+      AppConstants.categoryColorFor('Entertainment').toARGB32().obs;
 
   Rx<DateTime> startDate = DateTime.now().obs;
   Rxn<DateTime> endDate = Rxn<DateTime>();
@@ -67,12 +73,16 @@ class AddSubscriptionController extends GetxController {
   }
   void changeCategory(String value){
     category.value = value;
+    categoryColor.value = AppConstants.categoryColorFor(value).toARGB32();
   }
   void changeAutoRenew(bool value){
     autoRenew.value = value;
   }
   void changeFreeTrail(bool value){
     freeTrial.value = value;
+  }
+  void setBrandColor(Color color) {
+    brandColor.value = color.toARGB32();
   }
   void changeRemindDays(int value){
     reminderDays.value = value;
@@ -119,6 +129,8 @@ class AddSubscriptionController extends GetxController {
         currency: currency.value,
         billingCycle: billingCycle,
         category: category.value,
+        brandColor: brandColor.value,
+        categoryColor: categoryColor.value,
         startDate: startDate,
         nextBillingDate: nextBillingDate,
         autoRenew: autoRenew.value,

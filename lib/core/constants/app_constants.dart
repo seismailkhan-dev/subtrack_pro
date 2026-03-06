@@ -125,6 +125,23 @@ class SubscriptionModel {
 class AppConstants {
   AppConstants._();
 
+  static const Map<String, Color> categoryColors = {
+    'Entertainment': AppColors.catEntertainment,
+    'AI': Color(0xFF06B6D4),
+    'Education': Color(0xFF22C55E),
+    'Music': AppColors.catMusic,
+    'Health': AppColors.catHealth,
+    'Productivity': AppColors.catProductivity,
+    'Storage': AppColors.catStorage,
+    'Dev Tools': AppColors.catDev,
+    'Finance': AppColors.catFinance,
+    'Other': AppColors.catOther,
+  };
+
+  static Color categoryColorFor(String category) {
+    return categoryColors[category] ?? AppColors.catOther;
+  }
+
   static final List<SubscriptionModel> mockSubscriptions = [
     SubscriptionModel(
       id: '1',

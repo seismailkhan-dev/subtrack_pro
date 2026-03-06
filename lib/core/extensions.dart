@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../core/constants/app_constants.dart';
 import '../data/models/subcription_model.dart';
 
 extension SubscriptionDataModelFirebase on SubscriptionDataModel {
@@ -13,6 +14,8 @@ extension SubscriptionDataModelFirebase on SubscriptionDataModel {
       'currency': currency,
       'billingCycle': billingCycle,
       'category': category,
+      'brandColor': brandColor,
+      'categoryColor': categoryColor,
       'startDate': Timestamp.fromDate(startDate),
       'nextBillingDate': Timestamp.fromDate(nextBillingDate),
       'autoRenew': autoRenew,
@@ -28,6 +31,7 @@ extension SubscriptionDataModelFirebase on SubscriptionDataModel {
 
 extension FirebaseToSubscriptionDataModel on Map<String, dynamic> {
   SubscriptionDataModel toSubscription() {
+    final category = (this['category'] as String?) ?? 'Other';
     return SubscriptionDataModel(
       id: this['id'],
       subscriptionId: this['subscriptionId'],
@@ -36,7 +40,10 @@ extension FirebaseToSubscriptionDataModel on Map<String, dynamic> {
       price: (this['price'] as num).toDouble(),
       currency: this['currency'],
       billingCycle: this['billingCycle'],
-      category: this['category'],
+      category: category,
+      brandColor: (this['brandColor'] as int?) ?? 0xFF60A5FA,
+      categoryColor: (this['categoryColor'] as int?) ??
+          AppConstants.categoryColorFor(category).toARGB32(),
       startDate: (this['startDate'] as Timestamp).toDate(),
       nextBillingDate: (this['nextBillingDate'] as Timestamp).toDate(),
       autoRenew: this['autoRenew'],

@@ -9,6 +9,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/app_router.dart';
 import '../../shared/widgets/app_widgets.dart';
+import '../all_subscription/all_subscriptions_screen.dart';
 import '../analytics/analytics_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../insights/insights_screen.dart';
@@ -205,7 +206,9 @@ class _HomeDashboard extends StatelessWidget {
               SectionHeader(
                 title: 'All Subscriptions',
                 action: 'See All',
-                onAction: () {},
+                onAction: () {
+                  Get.to(()=>AllSubscriptionsScreen());
+                },
               ),
               const SizedBox(height: 14),
               Obx(() {

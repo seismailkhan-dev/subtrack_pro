@@ -93,6 +93,30 @@ class $SubscriptionsTableTable extends SubscriptionsTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _brandColorMeta = const VerificationMeta(
+    'brandColor',
+  );
+  @override
+  late final GeneratedColumn<int> brandColor = GeneratedColumn<int>(
+    'brand_color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0xFF60A5FA),
+  );
+  static const VerificationMeta _categoryColorMeta = const VerificationMeta(
+    'categoryColor',
+  );
+  @override
+  late final GeneratedColumn<int> categoryColor = GeneratedColumn<int>(
+    'category_color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0xFF6366F1),
+  );
   static const VerificationMeta _startDateMeta = const VerificationMeta(
     'startDate',
   );
@@ -214,6 +238,8 @@ class $SubscriptionsTableTable extends SubscriptionsTable
     currency,
     billingCycle,
     category,
+    brandColor,
+    categoryColor,
     startDate,
     nextBillingDate,
     autoRenew,
@@ -298,6 +324,21 @@ class $SubscriptionsTableTable extends SubscriptionsTable
       );
     } else if (isInserting) {
       context.missing(_categoryMeta);
+    }
+    if (data.containsKey('brand_color')) {
+      context.handle(
+        _brandColorMeta,
+        brandColor.isAcceptableOrUnknown(data['brand_color']!, _brandColorMeta),
+      );
+    }
+    if (data.containsKey('category_color')) {
+      context.handle(
+        _categoryColorMeta,
+        categoryColor.isAcceptableOrUnknown(
+          data['category_color']!,
+          _categoryColorMeta,
+        ),
+      );
     }
     if (data.containsKey('start_date')) {
       context.handle(
@@ -408,6 +449,14 @@ class $SubscriptionsTableTable extends SubscriptionsTable
         DriftSqlType.string,
         data['${effectivePrefix}category'],
       )!,
+      brandColor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}brand_color'],
+      )!,
+      categoryColor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}category_color'],
+      )!,
       startDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}start_date'],
@@ -463,6 +512,8 @@ class SubscriptionsTableData extends DataClass
   final String currency;
   final String billingCycle;
   final String category;
+  final int brandColor;
+  final int categoryColor;
   final DateTime startDate;
   final DateTime nextBillingDate;
   final bool autoRenew;
@@ -481,6 +532,8 @@ class SubscriptionsTableData extends DataClass
     required this.currency,
     required this.billingCycle,
     required this.category,
+    required this.brandColor,
+    required this.categoryColor,
     required this.startDate,
     required this.nextBillingDate,
     required this.autoRenew,
@@ -504,6 +557,8 @@ class SubscriptionsTableData extends DataClass
     map['currency'] = Variable<String>(currency);
     map['billing_cycle'] = Variable<String>(billingCycle);
     map['category'] = Variable<String>(category);
+    map['brand_color'] = Variable<int>(brandColor);
+    map['category_color'] = Variable<int>(categoryColor);
     map['start_date'] = Variable<DateTime>(startDate);
     map['next_billing_date'] = Variable<DateTime>(nextBillingDate);
     map['auto_renew'] = Variable<bool>(autoRenew);
@@ -530,6 +585,8 @@ class SubscriptionsTableData extends DataClass
       currency: Value(currency),
       billingCycle: Value(billingCycle),
       category: Value(category),
+      brandColor: Value(brandColor),
+      categoryColor: Value(categoryColor),
       startDate: Value(startDate),
       nextBillingDate: Value(nextBillingDate),
       autoRenew: Value(autoRenew),
@@ -558,6 +615,8 @@ class SubscriptionsTableData extends DataClass
       currency: serializer.fromJson<String>(json['currency']),
       billingCycle: serializer.fromJson<String>(json['billingCycle']),
       category: serializer.fromJson<String>(json['category']),
+      brandColor: serializer.fromJson<int>(json['brandColor']),
+      categoryColor: serializer.fromJson<int>(json['categoryColor']),
       startDate: serializer.fromJson<DateTime>(json['startDate']),
       nextBillingDate: serializer.fromJson<DateTime>(json['nextBillingDate']),
       autoRenew: serializer.fromJson<bool>(json['autoRenew']),
@@ -581,6 +640,8 @@ class SubscriptionsTableData extends DataClass
       'currency': serializer.toJson<String>(currency),
       'billingCycle': serializer.toJson<String>(billingCycle),
       'category': serializer.toJson<String>(category),
+      'brandColor': serializer.toJson<int>(brandColor),
+      'categoryColor': serializer.toJson<int>(categoryColor),
       'startDate': serializer.toJson<DateTime>(startDate),
       'nextBillingDate': serializer.toJson<DateTime>(nextBillingDate),
       'autoRenew': serializer.toJson<bool>(autoRenew),
@@ -602,6 +663,8 @@ class SubscriptionsTableData extends DataClass
     String? currency,
     String? billingCycle,
     String? category,
+    int? brandColor,
+    int? categoryColor,
     DateTime? startDate,
     DateTime? nextBillingDate,
     bool? autoRenew,
@@ -620,6 +683,8 @@ class SubscriptionsTableData extends DataClass
     currency: currency ?? this.currency,
     billingCycle: billingCycle ?? this.billingCycle,
     category: category ?? this.category,
+    brandColor: brandColor ?? this.brandColor,
+    categoryColor: categoryColor ?? this.categoryColor,
     startDate: startDate ?? this.startDate,
     nextBillingDate: nextBillingDate ?? this.nextBillingDate,
     autoRenew: autoRenew ?? this.autoRenew,
@@ -644,6 +709,12 @@ class SubscriptionsTableData extends DataClass
           ? data.billingCycle.value
           : this.billingCycle,
       category: data.category.present ? data.category.value : this.category,
+      brandColor: data.brandColor.present
+          ? data.brandColor.value
+          : this.brandColor,
+      categoryColor: data.categoryColor.present
+          ? data.categoryColor.value
+          : this.categoryColor,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
       nextBillingDate: data.nextBillingDate.present
           ? data.nextBillingDate.value
@@ -671,6 +742,8 @@ class SubscriptionsTableData extends DataClass
           ..write('currency: $currency, ')
           ..write('billingCycle: $billingCycle, ')
           ..write('category: $category, ')
+          ..write('brandColor: $brandColor, ')
+          ..write('categoryColor: $categoryColor, ')
           ..write('startDate: $startDate, ')
           ..write('nextBillingDate: $nextBillingDate, ')
           ..write('autoRenew: $autoRenew, ')
@@ -694,6 +767,8 @@ class SubscriptionsTableData extends DataClass
     currency,
     billingCycle,
     category,
+    brandColor,
+    categoryColor,
     startDate,
     nextBillingDate,
     autoRenew,
@@ -716,6 +791,8 @@ class SubscriptionsTableData extends DataClass
           other.currency == this.currency &&
           other.billingCycle == this.billingCycle &&
           other.category == this.category &&
+          other.brandColor == this.brandColor &&
+          other.categoryColor == this.categoryColor &&
           other.startDate == this.startDate &&
           other.nextBillingDate == this.nextBillingDate &&
           other.autoRenew == this.autoRenew &&
@@ -737,6 +814,8 @@ class SubscriptionsTableCompanion
   final Value<String> currency;
   final Value<String> billingCycle;
   final Value<String> category;
+  final Value<int> brandColor;
+  final Value<int> categoryColor;
   final Value<DateTime> startDate;
   final Value<DateTime> nextBillingDate;
   final Value<bool> autoRenew;
@@ -755,6 +834,8 @@ class SubscriptionsTableCompanion
     this.currency = const Value.absent(),
     this.billingCycle = const Value.absent(),
     this.category = const Value.absent(),
+    this.brandColor = const Value.absent(),
+    this.categoryColor = const Value.absent(),
     this.startDate = const Value.absent(),
     this.nextBillingDate = const Value.absent(),
     this.autoRenew = const Value.absent(),
@@ -774,6 +855,8 @@ class SubscriptionsTableCompanion
     required String currency,
     required String billingCycle,
     required String category,
+    this.brandColor = const Value.absent(),
+    this.categoryColor = const Value.absent(),
     required DateTime startDate,
     required DateTime nextBillingDate,
     this.autoRenew = const Value.absent(),
@@ -802,6 +885,8 @@ class SubscriptionsTableCompanion
     Expression<String>? currency,
     Expression<String>? billingCycle,
     Expression<String>? category,
+    Expression<int>? brandColor,
+    Expression<int>? categoryColor,
     Expression<DateTime>? startDate,
     Expression<DateTime>? nextBillingDate,
     Expression<bool>? autoRenew,
@@ -821,6 +906,8 @@ class SubscriptionsTableCompanion
       if (currency != null) 'currency': currency,
       if (billingCycle != null) 'billing_cycle': billingCycle,
       if (category != null) 'category': category,
+      if (brandColor != null) 'brand_color': brandColor,
+      if (categoryColor != null) 'category_color': categoryColor,
       if (startDate != null) 'start_date': startDate,
       if (nextBillingDate != null) 'next_billing_date': nextBillingDate,
       if (autoRenew != null) 'auto_renew': autoRenew,
@@ -842,6 +929,8 @@ class SubscriptionsTableCompanion
     Value<String>? currency,
     Value<String>? billingCycle,
     Value<String>? category,
+    Value<int>? brandColor,
+    Value<int>? categoryColor,
     Value<DateTime>? startDate,
     Value<DateTime>? nextBillingDate,
     Value<bool>? autoRenew,
@@ -861,6 +950,8 @@ class SubscriptionsTableCompanion
       currency: currency ?? this.currency,
       billingCycle: billingCycle ?? this.billingCycle,
       category: category ?? this.category,
+      brandColor: brandColor ?? this.brandColor,
+      categoryColor: categoryColor ?? this.categoryColor,
       startDate: startDate ?? this.startDate,
       nextBillingDate: nextBillingDate ?? this.nextBillingDate,
       autoRenew: autoRenew ?? this.autoRenew,
@@ -899,6 +990,12 @@ class SubscriptionsTableCompanion
     }
     if (category.present) {
       map['category'] = Variable<String>(category.value);
+    }
+    if (brandColor.present) {
+      map['brand_color'] = Variable<int>(brandColor.value);
+    }
+    if (categoryColor.present) {
+      map['category_color'] = Variable<int>(categoryColor.value);
     }
     if (startDate.present) {
       map['start_date'] = Variable<DateTime>(startDate.value);
@@ -941,6 +1038,8 @@ class SubscriptionsTableCompanion
           ..write('currency: $currency, ')
           ..write('billingCycle: $billingCycle, ')
           ..write('category: $category, ')
+          ..write('brandColor: $brandColor, ')
+          ..write('categoryColor: $categoryColor, ')
           ..write('startDate: $startDate, ')
           ..write('nextBillingDate: $nextBillingDate, ')
           ..write('autoRenew: $autoRenew, ')
@@ -1448,6 +1547,8 @@ typedef $$SubscriptionsTableTableCreateCompanionBuilder =
       required String currency,
       required String billingCycle,
       required String category,
+      Value<int> brandColor,
+      Value<int> categoryColor,
       required DateTime startDate,
       required DateTime nextBillingDate,
       Value<bool> autoRenew,
@@ -1468,6 +1569,8 @@ typedef $$SubscriptionsTableTableUpdateCompanionBuilder =
       Value<String> currency,
       Value<String> billingCycle,
       Value<String> category,
+      Value<int> brandColor,
+      Value<int> categoryColor,
       Value<DateTime> startDate,
       Value<DateTime> nextBillingDate,
       Value<bool> autoRenew,
@@ -1525,6 +1628,16 @@ class $$SubscriptionsTableTableFilterComposer
 
   ColumnFilters<String> get category => $composableBuilder(
     column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get brandColor => $composableBuilder(
+    column: $table.brandColor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get categoryColor => $composableBuilder(
+    column: $table.categoryColor,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1623,6 +1736,16 @@ class $$SubscriptionsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get brandColor => $composableBuilder(
+    column: $table.brandColor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get categoryColor => $composableBuilder(
+    column: $table.categoryColor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get startDate => $composableBuilder(
     column: $table.startDate,
     builder: (column) => ColumnOrderings(column),
@@ -1706,6 +1829,16 @@ class $$SubscriptionsTableTableAnnotationComposer
   GeneratedColumn<String> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
 
+  GeneratedColumn<int> get brandColor => $composableBuilder(
+    column: $table.brandColor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get categoryColor => $composableBuilder(
+    column: $table.categoryColor,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get startDate =>
       $composableBuilder(column: $table.startDate, builder: (column) => column);
 
@@ -1786,6 +1919,8 @@ class $$SubscriptionsTableTableTableManager
                 Value<String> currency = const Value.absent(),
                 Value<String> billingCycle = const Value.absent(),
                 Value<String> category = const Value.absent(),
+                Value<int> brandColor = const Value.absent(),
+                Value<int> categoryColor = const Value.absent(),
                 Value<DateTime> startDate = const Value.absent(),
                 Value<DateTime> nextBillingDate = const Value.absent(),
                 Value<bool> autoRenew = const Value.absent(),
@@ -1804,6 +1939,8 @@ class $$SubscriptionsTableTableTableManager
                 currency: currency,
                 billingCycle: billingCycle,
                 category: category,
+                brandColor: brandColor,
+                categoryColor: categoryColor,
                 startDate: startDate,
                 nextBillingDate: nextBillingDate,
                 autoRenew: autoRenew,
@@ -1824,6 +1961,8 @@ class $$SubscriptionsTableTableTableManager
                 required String currency,
                 required String billingCycle,
                 required String category,
+                Value<int> brandColor = const Value.absent(),
+                Value<int> categoryColor = const Value.absent(),
                 required DateTime startDate,
                 required DateTime nextBillingDate,
                 Value<bool> autoRenew = const Value.absent(),
@@ -1842,6 +1981,8 @@ class $$SubscriptionsTableTableTableManager
                 currency: currency,
                 billingCycle: billingCycle,
                 category: category,
+                brandColor: brandColor,
+                categoryColor: categoryColor,
                 startDate: startDate,
                 nextBillingDate: nextBillingDate,
                 autoRenew: autoRenew,

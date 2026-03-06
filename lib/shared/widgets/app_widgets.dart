@@ -220,6 +220,8 @@ class SubscriptionCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final days = 2;
+    final brandColor = subscription.brandColorAsColor;
+    final categoryColor = subscription.categoryColorAsColor;
 
     return Dismissible(
       key: Key(subscription.subscriptionId),
@@ -262,15 +264,16 @@ class SubscriptionCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  // color: subscription.brandColor.withOpacity(0.15),
-                  color: Colors.grey,
+                  color: brandColor.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Center(
                   child: Text(
-                    subscription.name.split("").first[0],
+                    subscription.name.isNotEmpty
+                        ? subscription.name.substring(0, 1).toUpperCase()
+                        : '?',
                     style: TextStyle(
-                      // color: subscription.brandColor,
+                      color: brandColor,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
@@ -291,7 +294,7 @@ class SubscriptionCard extends StatelessWidget {
                         _CategoryChip(
                           label: subscription.category,
                           // color: subscription.categoryColor,
-                          color: Colors.blue.withValues(alpha: 0.3),
+                          color: categoryColor,
                         ),
                         const SizedBox(width: 6),
                         Text(
