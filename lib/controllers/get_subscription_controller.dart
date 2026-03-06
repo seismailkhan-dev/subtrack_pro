@@ -6,10 +6,31 @@ import '../data/models/subcription_model.dart';
 
 class GetSubscriptionsController extends GetxController{
   final DriftService _service = DriftService();
+  static GetSubscriptionsController get to => Get.find();
 
-  Future<List<SubscriptionDataModel>> getSubscriptions() {
-    return _service.getSubscriptions();
+  RxBool isFetchingHomeSub = true.obs;
+
+
+  RxList<SubscriptionDataModel> homeSubListModel = <SubscriptionDataModel>[].obs;
+
+
+  Future<void> fetchSubscriptions({int limit = 5}) async {
+
+    isFetchingHomeSub(true);
+    try{
+      final subs = await _service.getSubscriptions();
+      subs.sort((a, b) => b.startDate.compareTo(a.startDate));
+
+      homeSubListModel.value= [];
+      homeSubListModel.addAll(subs.take(limit).toList());
+      print('homeSubListModel ${homeSubListModel.length}');
+    }catch(e){
+      print('Error fetching home sub $e');
+    }finally{
+      isFetchingHomeSub(false);
+    }
   }
+
 
   Stream<List<SubscriptionDataModel>> watchSubscriptions() {
     return _service.watchSubscriptions();

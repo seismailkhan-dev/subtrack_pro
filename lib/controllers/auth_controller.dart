@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:subtrack_pro/features/home/presentation/screens/home_screen.dart';
+import 'package:subtrack_pro/features/home/home_screen.dart';
 
 import '../core/services/flutter_secure_storage_service.dart';
 import '../core/services/password_service.dart';

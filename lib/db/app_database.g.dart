@@ -104,6 +104,18 @@ class $SubscriptionsTableTable extends SubscriptionsTable
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _nextBillingDateMeta = const VerificationMeta(
+    'nextBillingDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> nextBillingDate =
+      GeneratedColumn<DateTime>(
+        'next_billing_date',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
   static const VerificationMeta _autoRenewMeta = const VerificationMeta(
     'autoRenew',
   );
@@ -118,6 +130,21 @@ class $SubscriptionsTableTable extends SubscriptionsTable
       'CHECK ("auto_renew" IN (0, 1))',
     ),
     defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _freeTrialMeta = const VerificationMeta(
+    'freeTrial',
+  );
+  @override
+  late final GeneratedColumn<bool> freeTrial = GeneratedColumn<bool>(
+    'free_trial',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("free_trial" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
   );
   static const VerificationMeta _reminderDaysMeta = const VerificationMeta(
     'reminderDays',
@@ -188,7 +215,9 @@ class $SubscriptionsTableTable extends SubscriptionsTable
     billingCycle,
     category,
     startDate,
+    nextBillingDate,
     autoRenew,
+    freeTrial,
     reminderDays,
     notes,
     createdAt,
@@ -278,10 +307,27 @@ class $SubscriptionsTableTable extends SubscriptionsTable
     } else if (isInserting) {
       context.missing(_startDateMeta);
     }
+    if (data.containsKey('next_billing_date')) {
+      context.handle(
+        _nextBillingDateMeta,
+        nextBillingDate.isAcceptableOrUnknown(
+          data['next_billing_date']!,
+          _nextBillingDateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_nextBillingDateMeta);
+    }
     if (data.containsKey('auto_renew')) {
       context.handle(
         _autoRenewMeta,
         autoRenew.isAcceptableOrUnknown(data['auto_renew']!, _autoRenewMeta),
+      );
+    }
+    if (data.containsKey('free_trial')) {
+      context.handle(
+        _freeTrialMeta,
+        freeTrial.isAcceptableOrUnknown(data['free_trial']!, _freeTrialMeta),
       );
     }
     if (data.containsKey('reminder_days')) {
@@ -366,9 +412,17 @@ class $SubscriptionsTableTable extends SubscriptionsTable
         DriftSqlType.dateTime,
         data['${effectivePrefix}start_date'],
       )!,
+      nextBillingDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}next_billing_date'],
+      )!,
       autoRenew: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}auto_renew'],
+      )!,
+      freeTrial: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}free_trial'],
       )!,
       reminderDays: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -410,7 +464,9 @@ class SubscriptionsTableData extends DataClass
   final String billingCycle;
   final String category;
   final DateTime startDate;
+  final DateTime nextBillingDate;
   final bool autoRenew;
+  final bool freeTrial;
   final int reminderDays;
   final String? notes;
   final DateTime createdAt;
@@ -426,7 +482,9 @@ class SubscriptionsTableData extends DataClass
     required this.billingCycle,
     required this.category,
     required this.startDate,
+    required this.nextBillingDate,
     required this.autoRenew,
+    required this.freeTrial,
     required this.reminderDays,
     this.notes,
     required this.createdAt,
@@ -447,7 +505,9 @@ class SubscriptionsTableData extends DataClass
     map['billing_cycle'] = Variable<String>(billingCycle);
     map['category'] = Variable<String>(category);
     map['start_date'] = Variable<DateTime>(startDate);
+    map['next_billing_date'] = Variable<DateTime>(nextBillingDate);
     map['auto_renew'] = Variable<bool>(autoRenew);
+    map['free_trial'] = Variable<bool>(freeTrial);
     map['reminder_days'] = Variable<int>(reminderDays);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
@@ -471,7 +531,9 @@ class SubscriptionsTableData extends DataClass
       billingCycle: Value(billingCycle),
       category: Value(category),
       startDate: Value(startDate),
+      nextBillingDate: Value(nextBillingDate),
       autoRenew: Value(autoRenew),
+      freeTrial: Value(freeTrial),
       reminderDays: Value(reminderDays),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
@@ -497,7 +559,9 @@ class SubscriptionsTableData extends DataClass
       billingCycle: serializer.fromJson<String>(json['billingCycle']),
       category: serializer.fromJson<String>(json['category']),
       startDate: serializer.fromJson<DateTime>(json['startDate']),
+      nextBillingDate: serializer.fromJson<DateTime>(json['nextBillingDate']),
       autoRenew: serializer.fromJson<bool>(json['autoRenew']),
+      freeTrial: serializer.fromJson<bool>(json['freeTrial']),
       reminderDays: serializer.fromJson<int>(json['reminderDays']),
       notes: serializer.fromJson<String?>(json['notes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -518,7 +582,9 @@ class SubscriptionsTableData extends DataClass
       'billingCycle': serializer.toJson<String>(billingCycle),
       'category': serializer.toJson<String>(category),
       'startDate': serializer.toJson<DateTime>(startDate),
+      'nextBillingDate': serializer.toJson<DateTime>(nextBillingDate),
       'autoRenew': serializer.toJson<bool>(autoRenew),
+      'freeTrial': serializer.toJson<bool>(freeTrial),
       'reminderDays': serializer.toJson<int>(reminderDays),
       'notes': serializer.toJson<String?>(notes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -537,7 +603,9 @@ class SubscriptionsTableData extends DataClass
     String? billingCycle,
     String? category,
     DateTime? startDate,
+    DateTime? nextBillingDate,
     bool? autoRenew,
+    bool? freeTrial,
     int? reminderDays,
     Value<String?> notes = const Value.absent(),
     DateTime? createdAt,
@@ -553,7 +621,9 @@ class SubscriptionsTableData extends DataClass
     billingCycle: billingCycle ?? this.billingCycle,
     category: category ?? this.category,
     startDate: startDate ?? this.startDate,
+    nextBillingDate: nextBillingDate ?? this.nextBillingDate,
     autoRenew: autoRenew ?? this.autoRenew,
+    freeTrial: freeTrial ?? this.freeTrial,
     reminderDays: reminderDays ?? this.reminderDays,
     notes: notes.present ? notes.value : this.notes,
     createdAt: createdAt ?? this.createdAt,
@@ -575,7 +645,11 @@ class SubscriptionsTableData extends DataClass
           : this.billingCycle,
       category: data.category.present ? data.category.value : this.category,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
+      nextBillingDate: data.nextBillingDate.present
+          ? data.nextBillingDate.value
+          : this.nextBillingDate,
       autoRenew: data.autoRenew.present ? data.autoRenew.value : this.autoRenew,
+      freeTrial: data.freeTrial.present ? data.freeTrial.value : this.freeTrial,
       reminderDays: data.reminderDays.present
           ? data.reminderDays.value
           : this.reminderDays,
@@ -598,7 +672,9 @@ class SubscriptionsTableData extends DataClass
           ..write('billingCycle: $billingCycle, ')
           ..write('category: $category, ')
           ..write('startDate: $startDate, ')
+          ..write('nextBillingDate: $nextBillingDate, ')
           ..write('autoRenew: $autoRenew, ')
+          ..write('freeTrial: $freeTrial, ')
           ..write('reminderDays: $reminderDays, ')
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
@@ -619,7 +695,9 @@ class SubscriptionsTableData extends DataClass
     billingCycle,
     category,
     startDate,
+    nextBillingDate,
     autoRenew,
+    freeTrial,
     reminderDays,
     notes,
     createdAt,
@@ -639,7 +717,9 @@ class SubscriptionsTableData extends DataClass
           other.billingCycle == this.billingCycle &&
           other.category == this.category &&
           other.startDate == this.startDate &&
+          other.nextBillingDate == this.nextBillingDate &&
           other.autoRenew == this.autoRenew &&
+          other.freeTrial == this.freeTrial &&
           other.reminderDays == this.reminderDays &&
           other.notes == this.notes &&
           other.createdAt == this.createdAt &&
@@ -658,7 +738,9 @@ class SubscriptionsTableCompanion
   final Value<String> billingCycle;
   final Value<String> category;
   final Value<DateTime> startDate;
+  final Value<DateTime> nextBillingDate;
   final Value<bool> autoRenew;
+  final Value<bool> freeTrial;
   final Value<int> reminderDays;
   final Value<String?> notes;
   final Value<DateTime> createdAt;
@@ -674,7 +756,9 @@ class SubscriptionsTableCompanion
     this.billingCycle = const Value.absent(),
     this.category = const Value.absent(),
     this.startDate = const Value.absent(),
+    this.nextBillingDate = const Value.absent(),
     this.autoRenew = const Value.absent(),
+    this.freeTrial = const Value.absent(),
     this.reminderDays = const Value.absent(),
     this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -691,7 +775,9 @@ class SubscriptionsTableCompanion
     required String billingCycle,
     required String category,
     required DateTime startDate,
+    required DateTime nextBillingDate,
     this.autoRenew = const Value.absent(),
+    this.freeTrial = const Value.absent(),
     this.reminderDays = const Value.absent(),
     this.notes = const Value.absent(),
     required DateTime createdAt,
@@ -704,6 +790,7 @@ class SubscriptionsTableCompanion
        billingCycle = Value(billingCycle),
        category = Value(category),
        startDate = Value(startDate),
+       nextBillingDate = Value(nextBillingDate),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<SubscriptionsTableData> custom({
@@ -716,7 +803,9 @@ class SubscriptionsTableCompanion
     Expression<String>? billingCycle,
     Expression<String>? category,
     Expression<DateTime>? startDate,
+    Expression<DateTime>? nextBillingDate,
     Expression<bool>? autoRenew,
+    Expression<bool>? freeTrial,
     Expression<int>? reminderDays,
     Expression<String>? notes,
     Expression<DateTime>? createdAt,
@@ -733,7 +822,9 @@ class SubscriptionsTableCompanion
       if (billingCycle != null) 'billing_cycle': billingCycle,
       if (category != null) 'category': category,
       if (startDate != null) 'start_date': startDate,
+      if (nextBillingDate != null) 'next_billing_date': nextBillingDate,
       if (autoRenew != null) 'auto_renew': autoRenew,
+      if (freeTrial != null) 'free_trial': freeTrial,
       if (reminderDays != null) 'reminder_days': reminderDays,
       if (notes != null) 'notes': notes,
       if (createdAt != null) 'created_at': createdAt,
@@ -752,7 +843,9 @@ class SubscriptionsTableCompanion
     Value<String>? billingCycle,
     Value<String>? category,
     Value<DateTime>? startDate,
+    Value<DateTime>? nextBillingDate,
     Value<bool>? autoRenew,
+    Value<bool>? freeTrial,
     Value<int>? reminderDays,
     Value<String?>? notes,
     Value<DateTime>? createdAt,
@@ -769,7 +862,9 @@ class SubscriptionsTableCompanion
       billingCycle: billingCycle ?? this.billingCycle,
       category: category ?? this.category,
       startDate: startDate ?? this.startDate,
+      nextBillingDate: nextBillingDate ?? this.nextBillingDate,
       autoRenew: autoRenew ?? this.autoRenew,
+      freeTrial: freeTrial ?? this.freeTrial,
       reminderDays: reminderDays ?? this.reminderDays,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
@@ -808,8 +903,14 @@ class SubscriptionsTableCompanion
     if (startDate.present) {
       map['start_date'] = Variable<DateTime>(startDate.value);
     }
+    if (nextBillingDate.present) {
+      map['next_billing_date'] = Variable<DateTime>(nextBillingDate.value);
+    }
     if (autoRenew.present) {
       map['auto_renew'] = Variable<bool>(autoRenew.value);
+    }
+    if (freeTrial.present) {
+      map['free_trial'] = Variable<bool>(freeTrial.value);
     }
     if (reminderDays.present) {
       map['reminder_days'] = Variable<int>(reminderDays.value);
@@ -841,7 +942,9 @@ class SubscriptionsTableCompanion
           ..write('billingCycle: $billingCycle, ')
           ..write('category: $category, ')
           ..write('startDate: $startDate, ')
+          ..write('nextBillingDate: $nextBillingDate, ')
           ..write('autoRenew: $autoRenew, ')
+          ..write('freeTrial: $freeTrial, ')
           ..write('reminderDays: $reminderDays, ')
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
@@ -1346,7 +1449,9 @@ typedef $$SubscriptionsTableTableCreateCompanionBuilder =
       required String billingCycle,
       required String category,
       required DateTime startDate,
+      required DateTime nextBillingDate,
       Value<bool> autoRenew,
+      Value<bool> freeTrial,
       Value<int> reminderDays,
       Value<String?> notes,
       required DateTime createdAt,
@@ -1364,7 +1469,9 @@ typedef $$SubscriptionsTableTableUpdateCompanionBuilder =
       Value<String> billingCycle,
       Value<String> category,
       Value<DateTime> startDate,
+      Value<DateTime> nextBillingDate,
       Value<bool> autoRenew,
+      Value<bool> freeTrial,
       Value<int> reminderDays,
       Value<String?> notes,
       Value<DateTime> createdAt,
@@ -1426,8 +1533,18 @@ class $$SubscriptionsTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<DateTime> get nextBillingDate => $composableBuilder(
+    column: $table.nextBillingDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<bool> get autoRenew => $composableBuilder(
     column: $table.autoRenew,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get freeTrial => $composableBuilder(
+    column: $table.freeTrial,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1511,8 +1628,18 @@ class $$SubscriptionsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get nextBillingDate => $composableBuilder(
+    column: $table.nextBillingDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get autoRenew => $composableBuilder(
     column: $table.autoRenew,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get freeTrial => $composableBuilder(
+    column: $table.freeTrial,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1582,8 +1709,16 @@ class $$SubscriptionsTableTableAnnotationComposer
   GeneratedColumn<DateTime> get startDate =>
       $composableBuilder(column: $table.startDate, builder: (column) => column);
 
+  GeneratedColumn<DateTime> get nextBillingDate => $composableBuilder(
+    column: $table.nextBillingDate,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get autoRenew =>
       $composableBuilder(column: $table.autoRenew, builder: (column) => column);
+
+  GeneratedColumn<bool> get freeTrial =>
+      $composableBuilder(column: $table.freeTrial, builder: (column) => column);
 
   GeneratedColumn<int> get reminderDays => $composableBuilder(
     column: $table.reminderDays,
@@ -1652,7 +1787,9 @@ class $$SubscriptionsTableTableTableManager
                 Value<String> billingCycle = const Value.absent(),
                 Value<String> category = const Value.absent(),
                 Value<DateTime> startDate = const Value.absent(),
+                Value<DateTime> nextBillingDate = const Value.absent(),
                 Value<bool> autoRenew = const Value.absent(),
+                Value<bool> freeTrial = const Value.absent(),
                 Value<int> reminderDays = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -1668,7 +1805,9 @@ class $$SubscriptionsTableTableTableManager
                 billingCycle: billingCycle,
                 category: category,
                 startDate: startDate,
+                nextBillingDate: nextBillingDate,
                 autoRenew: autoRenew,
+                freeTrial: freeTrial,
                 reminderDays: reminderDays,
                 notes: notes,
                 createdAt: createdAt,
@@ -1686,7 +1825,9 @@ class $$SubscriptionsTableTableTableManager
                 required String billingCycle,
                 required String category,
                 required DateTime startDate,
+                required DateTime nextBillingDate,
                 Value<bool> autoRenew = const Value.absent(),
+                Value<bool> freeTrial = const Value.absent(),
                 Value<int> reminderDays = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 required DateTime createdAt,
@@ -1702,7 +1843,9 @@ class $$SubscriptionsTableTableTableManager
                 billingCycle: billingCycle,
                 category: category,
                 startDate: startDate,
+                nextBillingDate: nextBillingDate,
                 autoRenew: autoRenew,
+                freeTrial: freeTrial,
                 reminderDays: reminderDays,
                 notes: notes,
                 createdAt: createdAt,

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/utils/app_router.dart';
-import '../../../../shared/widgets/app_widgets.dart';
-import '../../../analytics/presentation/screens/analytics_screen.dart';
-import '../../../calendar/presentation/screens/calendar_screen.dart';
-import '../../../insights/presentation/screens/insights_screen.dart';
-import '../../../settings/presentation/screens/settings_screen.dart';
+import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
+import 'package:subtrack_pro/data/models/subcription_model.dart';
+import 'package:subtrack_pro/shared/widgets/custom_loader.dart';
+import '../../controllers/get_subscription_controller.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/constants/app_constants.dart';
+import '../../core/utils/app_router.dart';
+import '../../shared/widgets/app_widgets.dart';
+import '../analytics/analytics_screen.dart';
+import '../calendar/calendar_screen.dart';
+import '../insights/insights_screen.dart';
+import '../settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +22,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  final getSubController = Get.put(GetSubscriptionsController());
+
+
+  @override
+  void initState() {
+    super.initState();
+    getSubController.fetchSubscriptions();
+  }
+
+
   int _tabIndex = 0;
   List<SubscriptionModel> _subs = List.from(AppConstants.mockSubscriptions);
 
@@ -84,8 +100,8 @@ class _HomeDashboard extends StatelessWidget {
   final double totalMonthly;
   final double totalYearly;
   final VoidCallback onAddSub;
-  final void Function(SubscriptionModel) onSubTap;
-  final void Function(SubscriptionModel) onSubDelete;
+  final void Function(SubscriptionDataModel) onSubTap;
+  final void Function(SubscriptionDataModel) onSubDelete;
 
   const _HomeDashboard({
     required this.subs,
@@ -98,6 +114,9 @@ class _HomeDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final getSubController = Get.find<GetSubscriptionsController>();
+
     final theme = Theme.of(context);
     final upcoming = subs
         .where((s) => s.daysUntilRenewal <= 7)
@@ -167,20 +186,20 @@ class _HomeDashboard extends StatelessWidget {
               const SizedBox(height: 28),
 
               // ── Upcoming Renewals ─────────────────────────────────────
-              if (upcoming.isNotEmpty) ...[
-                SectionHeader(
-                  title: 'Upcoming Renewals',
-                  action: 'See All',
-                  onAction: () {},
-                ),
-                const SizedBox(height: 14),
-                ...upcoming.map((sub) => SubscriptionCard(
-                      subscription: sub,
-                      onTap: () => onSubTap(sub),
-                      onDelete: () => onSubDelete(sub),
-                    )),
-                const SizedBox(height: 28),
-              ],
+              // if (upcoming.isNotEmpty) ...[
+              //   SectionHeader(
+              //     title: 'Upcoming Renewals',
+              //     action: 'See All',
+              //     onAction: () {},
+              //   ),
+              //   const SizedBox(height: 14),
+              //   ...upcoming.map((sub) => SubscriptionCard(
+              //         subscription: sub,
+              //         onTap: () => onSubTap(sub),
+              //         onDelete: () => onSubDelete(sub),
+              //       )),
+              //   const SizedBox(height: 28),
+              // ],
 
               // ── All Subscriptions ─────────────────────────────────────
               SectionHeader(
@@ -189,14 +208,27 @@ class _HomeDashboard extends StatelessWidget {
                 onAction: () {},
               ),
               const SizedBox(height: 14),
-              ...subs
-                  .where((s) => s.daysUntilRenewal > 7)
-                  .map((sub) => SubscriptionCard(
-                        subscription: sub,
-                        onTap: () => onSubTap(sub),
-                        onDelete: () => onSubDelete(sub),
-                      )),
-
+              Obx(() {
+                if (getSubController.isFetchingHomeSub.value) {
+                  return customLoader();
+                } else if (getSubController.homeSubListModel.isEmpty) {
+                  return Center(child: Text('Not Found'));
+                } else {
+                  // ✅ Return the ListView
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: getSubController.homeSubListModel.length,
+                    itemBuilder: (BuildContext ctx, index) {
+                      return SubscriptionCard(
+                        subscription: getSubController.homeSubListModel[index],
+                        onTap: () => onSubTap(getSubController.homeSubListModel[index]),
+                        onDelete: () => onSubDelete(getSubController.homeSubListModel[index]),
+                      );
+                    },
+                  );
+                }
+              }),
               const SizedBox(height: 28),
 
               // ── Spending Trend ─────────────────────────────────────────

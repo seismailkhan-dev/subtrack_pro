@@ -2,9 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:subtrack_pro/core/services/sharedpref_service.dart';
-import 'package:subtrack_pro/features/auth/presentation/screens/auth_screen.dart';
-import 'package:subtrack_pro/features/home/presentation/screens/home_screen.dart';
-import 'package:subtrack_pro/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:subtrack_pro/features/auth/auth_screen.dart';
+import 'package:subtrack_pro/features/home/home_screen.dart';
+import 'package:subtrack_pro/features/onboarding/onboarding_screen.dart';
 
 import '../core/services/drift_service.dart';
 import '../data/models/user_model.dart';

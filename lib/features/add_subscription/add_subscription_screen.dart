@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../controllers/add_subscription_controller.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../shared/widgets/app_widgets.dart';
-import '../../../../shared/widgets/custom_text.dart';
+import 'package:subtrack_pro/shared/cards/custom_card_theme.dart';
+import '../../controllers/add_subscription_controller.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/constants/app_constants.dart';
+import '../../shared/widgets/app_toggle_row.dart';
+import '../../shared/widgets/app_widgets.dart';
+import '../../shared/input_fields/custom_dropdown.dart';
+import '../../shared/widgets/custom_snack_bar.dart';
 
 class AddSubscriptionScreen extends StatefulWidget {
   const AddSubscriptionScreen({super.key});
@@ -15,54 +18,36 @@ class AddSubscriptionScreen extends StatefulWidget {
 
 class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
 
-
   final subController = Get.put(AddSubscriptionController());
-
-
   final _form = GlobalKey<FormState>();
 
-  int _cycleIndex = 1;
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
   void _save() async {
     if (!(_form.currentState?.validate() ?? false)) return;
-    // setState(() => _saving = true);
-    // await Future.delayed(const Duration(milliseconds: 1000));
-    if (mounted) {
-      // setState(() => _saving = false);
-      _showSuccess();
+    final price = double.tryParse(subController.priceTextController.text);
+    if (price == null || price <= 0) {
+      customSnackBar(
+        'Invalid Price',
+        'Please enter a valid price greater than 0',
+      );
+      return;
     }
+
+    if (subController.category.value.isEmpty) {
+      customSnackBar(
+        'Category Required',
+        'Please select a category',
+        isWarning: true,
+      );
+      return;
+    }
+
+    subController.addSubscription(context: context);
+
   }
 
-  void _showSuccess() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _SuccessSheet(name: ''),
-    ).then((_) => Navigator.pop(context));
-  }
 
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-      builder: (_, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: Theme.of(context).colorScheme.copyWith(
-                primary: AppColors.primary,
-              ),
-        ),
-        child: child!,
-      ),
-    );
-    // if (picked != null) setState(() => _startDate = picked);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +120,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                   Row(
                     children: [
                       Expanded(
-                        flex: 3,
+                        flex: 4,
                         child: AppTextField(
                           label: 'Price',
                           hint: '9.99',
@@ -210,30 +195,42 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
 
                   // Start Date
                   AppTextField(
-                      label: 'End Date',
+                      label: 'Next Billing Date',
                       hint:
                       'dd/mm/yyyy',
                       prefixIcon: Icons.calendar_today_rounded,
                       readOnly: true,
-                      onTap: ()=> subController.selectDate(context, false),
-                      controller: subController.endDateTextController
+                      controller: subController.nextBillingDateTextController
                   ),
                   const SizedBox(height: 20),
 
                   // Auto Renew
-                  _SettingsCard(
+                  CustomCardTheme(
                     child: AppToggleRow(
                       icon: Icons.autorenew_rounded,
                       title: 'Auto Renew',
                       subtitle: 'Automatically renews on billing date',
                       value: subController.autoRenew.value,
-                      onChanged: (v) => subController.changeAutoRenew(v),
+                      onChanged: (v) => subController.changeAutoRenew(v), context: context,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+
+                  // Free Trial
+                  CustomCardTheme(
+                    child: AppToggleRow(
+                      icon: Icons.lock_open_rounded,
+                      title: 'Free Trial',
+                      subtitle: 'Subscription starts automatically after the trial.',
+                      value: subController.freeTrial.value,
+                      onChanged: (v) => subController.changeAutoRenew(v), context: context,
                     ),
                   ),
                   const SizedBox(height: 12),
 
                   // Reminder Days
-                  _SettingsCard(
+                  CustomCardTheme(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -314,68 +311,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
   }
 }
 
-class _SettingsCard extends StatelessWidget {
-  final Widget child;
-  const _SettingsCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight),
-      ),
-      child: child,
-    );
-  }
-}
 
 
-class _SuccessSheet extends StatelessWidget {
-  final String name;
-  const _SuccessSheet({required this.name});
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SheetHandle(),
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.12),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.check_rounded,
-                color: AppColors.accent, size: 32),
-          ),
-          const SizedBox(height: 16),
-          Text('Subscription Added!',
-              style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 8),
-          Text('$name has been added to your tracker.',
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center),
-          const SizedBox(height: 24),
-          AppButton(
-            label: 'Great!',
-            onTap: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-    );
-  }
-}
+

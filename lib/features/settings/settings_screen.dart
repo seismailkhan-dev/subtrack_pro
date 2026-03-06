@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:subtrack_pro/controllers/app_controller.dart';
 import 'package:subtrack_pro/core/services/format_service.dart';
-import 'package:subtrack_pro/features/auth/presentation/screens/auth_screen.dart';
-import 'package:subtrack_pro/features/home/presentation/screens/home_screen.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../shared/widgets/app_widgets.dart';
+import 'package:subtrack_pro/features/auth/auth_screen.dart';
+import 'package:subtrack_pro/features/home/home_screen.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/constants/app_constants.dart';
+import '../../shared/widgets/app_toggle_row.dart';
+import '../../shared/widgets/app_widgets.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -48,7 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Dark Mode',
                 subtitle: 'Switch to dark theme',
                 value: _darkMode,
-                onChanged: (v) => setState(() => _darkMode = v),
+                onChanged: (v) => setState(() => _darkMode = v), context: context,
               ),
             ]),
             const SizedBox(height: 16),

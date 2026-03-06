@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:subtrack_pro/core/services/sharedpref_service.dart';
-import 'package:subtrack_pro/features/auth/presentation/screens/auth_screen.dart';
-import 'package:subtrack_pro/features/home/presentation/screens/home_screen.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/app_router.dart';
-import '../../../../shared/widgets/app_widgets.dart';
+import 'package:subtrack_pro/features/auth/auth_screen.dart';
+import 'package:subtrack_pro/features/home/home_screen.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/utils/app_router.dart';
+import '../../shared/widgets/app_widgets.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

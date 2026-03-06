@@ -4,10 +4,10 @@ import 'package:subtrack_pro/controllers/app_controller.dart';
 import 'package:subtrack_pro/controllers/auth_controller.dart';
 import 'package:subtrack_pro/core/services/sharedpref_service.dart';
 import 'package:subtrack_pro/core/services/validation_service.dart';
-import 'package:subtrack_pro/features/home/presentation/screens/home_screen.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/app_router.dart';
-import '../../../../shared/widgets/app_widgets.dart';
+import 'package:subtrack_pro/features/home/home_screen.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/utils/app_router.dart';
+import '../../shared/widgets/app_widgets.dart';
 
 enum _AuthMode { login, signup, forgotPassword }
 

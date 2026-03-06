@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../shared/widgets/app_widgets.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/constants/app_constants.dart';
+import '../../shared/widgets/app_widgets.dart';
 
 class PremiumScreen extends StatefulWidget {
   const PremiumScreen({super.key});

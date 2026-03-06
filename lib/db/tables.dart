@@ -32,7 +32,9 @@ class SubscriptionsTable extends Table {
   TextColumn get billingCycle => text()(); // weekly, monthly, yearly
   TextColumn get category => text()(); // entertainment, productivity etc
   DateTimeColumn get startDate => dateTime()();
+  DateTimeColumn get nextBillingDate => dateTime()();
   BoolColumn get autoRenew => boolean().withDefault(const Constant(true))();
+  BoolColumn get freeTrial => boolean().withDefault(const Constant(false))();
   IntColumn get reminderDays =>
       integer().withDefault(const Constant(3))();
   TextColumn get notes => text().nullable()();

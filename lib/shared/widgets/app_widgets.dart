@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:subtrack_pro/data/models/subcription_model.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
@@ -200,65 +201,10 @@ class AppTextField extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 3. TOGGLE SWITCH ROW
-// ─────────────────────────────────────────────────────────────────────────────
 
-class AppToggleRow extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  final IconData? icon;
-
-  const AppToggleRow({
-    super.key,
-    required this.title,
-    this.subtitle,
-    required this.value,
-    required this.onChanged,
-    this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      children: [
-        if (icon != null) ...[
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, size: 18, color: AppColors.primary),
-          ),
-          const SizedBox(width: 12),
-        ],
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: theme.textTheme.titleSmall),
-              if (subtitle != null)
-                Text(subtitle!, style: theme.textTheme.bodySmall),
-            ],
-          ),
-        ),
-        Switch(value: value, onChanged: onChanged),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 4. SUBSCRIPTION CARD
-// ─────────────────────────────────────────────────────────────────────────────
 
 class SubscriptionCard extends StatelessWidget {
-  final SubscriptionModel subscription;
+  final SubscriptionDataModel subscription;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
 
@@ -273,10 +219,10 @@ class SubscriptionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final days = subscription.daysUntilRenewal;
+    final days = 2;
 
     return Dismissible(
-      key: Key(subscription.id),
+      key: Key(subscription.subscriptionId),
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
@@ -316,14 +262,15 @@ class SubscriptionCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: subscription.brandColor.withOpacity(0.15),
+                  // color: subscription.brandColor.withOpacity(0.15),
+                  color: Colors.grey,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Center(
                   child: Text(
-                    subscription.logoLetter,
+                    subscription.name.split("").first[0],
                     style: TextStyle(
-                      color: subscription.brandColor,
+                      // color: subscription.brandColor,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
@@ -342,12 +289,13 @@ class SubscriptionCard extends StatelessWidget {
                     Row(
                       children: [
                         _CategoryChip(
-                          label: subscription.categoryLabel,
-                          color: subscription.categoryColor,
+                          label: subscription.category,
+                          // color: subscription.categoryColor,
+                          color: Colors.blue.withValues(alpha: 0.3),
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          subscription.cycleLabel,
+                          subscription.billingCycle,
                           style: theme.textTheme.labelSmall,
                         ),
                       ],

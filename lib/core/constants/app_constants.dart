@@ -210,6 +210,8 @@ class AppConstants {
   static final List<String> categories = [
     'All',
     'Entertainment',
+    'AI',
+    'Education',
     'Music',
     'Health',
     'Productivity',
@@ -220,7 +222,7 @@ class AppConstants {
   ];
 
   static final List<String> currencies = [
-    'USD', 'EUR', 'GBP', 'JPY', 'PKR', 'CAD', 'AUD', 'INR',
+    'USD', 'EUR', 'GBP', 'JPY', 'PKR', 'CAD', 'AUD', 'INR','PKR'
   ];
 
   static final List<String> billingCycles = ['Weekly', 'Monthly', 'Yearly'];

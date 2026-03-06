@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:subtrack_pro/controllers/app_controller.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/app_router.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/utils/app_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

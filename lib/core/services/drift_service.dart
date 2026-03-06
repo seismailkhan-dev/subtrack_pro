@@ -74,13 +74,18 @@ class DriftService {
   Future<int> saveSubscription(SubscriptionDataModel sub) {
     return _db.insertSubscription(
       SubscriptionsTableCompanion(
+        id: Value.absent(),
+        userId: Value(sub.userId),
+        subscriptionId: Value(sub.subscriptionId),
         name: Value(sub.name),
         price: Value(sub.price),
         currency: Value(sub.currency),
         billingCycle: Value(sub.billingCycle),
         category: Value(sub.category),
         startDate: Value(sub.startDate),
+        nextBillingDate: Value(sub.nextBillingDate),
         autoRenew: Value(sub.autoRenew),
+        freeTrial: Value(sub.freeTrial),
         reminderDays: Value(sub.reminderDays),
         notes: Value(sub.notes),
         createdAt: Value(sub.createdAt),
@@ -95,14 +100,18 @@ class DriftService {
 
     return data.map((e) {
       return SubscriptionDataModel(
+        userId: e.userId,
         id: e.id,
         name: e.name,
+        subscriptionId: e.subscriptionId,
         price: e.price,
         currency: e.currency,
         billingCycle: e.billingCycle,
         category: e.category,
         startDate: e.startDate,
+        nextBillingDate: e.nextBillingDate,
         autoRenew: e.autoRenew,
+        freeTrial: e.freeTrial,
         reminderDays: e.reminderDays,
         notes: e.notes,
         createdAt: e.createdAt,
@@ -117,14 +126,18 @@ class DriftService {
           (rows) => rows
           .map(
             (e) => SubscriptionDataModel(
+          userId: e.userId,
           id: e.id,
           name: e.name,
-          price: e.price,
+              subscriptionId: e.subscriptionId,
+              price: e.price,
           currency: e.currency,
           billingCycle: e.billingCycle,
           category: e.category,
           startDate: e.startDate,
+              nextBillingDate: e.nextBillingDate,
           autoRenew: e.autoRenew,
+          freeTrial: e.freeTrial,
           reminderDays: e.reminderDays,
           notes: e.notes,
           createdAt: e.createdAt,
