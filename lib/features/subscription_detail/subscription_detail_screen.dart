@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:subtrack_pro/core/services/format_service.dart';
+import 'package:subtrack_pro/data/models/subcription_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
 import '../../shared/widgets/app_widgets.dart';
 
 class SubscriptionDetailScreen extends StatelessWidget {
-  final SubscriptionModel subscription;
+  final SubscriptionDataModel subscription;
 
   const SubscriptionDetailScreen({super.key, required this.subscription});
 
@@ -26,8 +28,8 @@ class SubscriptionDetailScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      subscription.brandColor,
-                      Color.lerp(subscription.brandColor, Colors.black, 0.4)!,
+                      Color(subscription.brandColor),
+                      Color.lerp(Color(subscription.brandColor), Colors.black, 0.4)!,
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -50,7 +52,7 @@ class SubscriptionDetailScreen extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            subscription.logoLetter,
+                            FormatService.getUserInitials(subscription.name),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 28,
@@ -66,7 +68,7 @@ class SubscriptionDetailScreen extends StatelessWidget {
                               fontSize: 22,
                               fontWeight: FontWeight.w800)),
                       const SizedBox(height: 4),
-                      Text(subscription.categoryLabel,
+                      Text(subscription.category,
                           style: TextStyle(
                               color: Colors.white.withOpacity(0.7),
                               fontSize: 13)),
@@ -105,7 +107,7 @@ class SubscriptionDetailScreen extends StatelessWidget {
                   subtitle: 'Last 6 months',
                   chart: SizedBox(
                     height: 100,
-                    child: _SubBarChart(color: subscription.brandColor),
+                    child: _SubBarChart(color: Color(subscription.brandColor)),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -158,7 +160,7 @@ class SubscriptionDetailScreen extends StatelessWidget {
     );
   }
 
-  List<Map<String, dynamic>> _paymentHistory(SubscriptionModel sub) {
+  List<Map<String, dynamic>> _paymentHistory(SubscriptionDataModel sub) {
     final now = DateTime.now();
     return List.generate(4, (i) {
       final date = DateTime(now.year, now.month - i, 15);
@@ -236,7 +238,7 @@ class SubscriptionDetailScreen extends StatelessWidget {
 }
 
 class _PriceCard extends StatelessWidget {
-  final SubscriptionModel subscription;
+  final SubscriptionDataModel subscription;
   const _PriceCard({required this.subscription});
 
   @override
@@ -264,9 +266,9 @@ class _PriceCard extends StatelessWidget {
                 Text(
                   '\$${subscription.price.toStringAsFixed(2)}',
                   style: theme.textTheme.displaySmall
-                      ?.copyWith(color: subscription.brandColor),
+                      ?.copyWith(color: Color(subscription.brandColor)),
                 ),
-                Text('/ ${subscription.cycleLabel.toLowerCase()}',
+                Text('/ ${subscription.billingCycle.toLowerCase()}',
                     style: theme.textTheme.bodySmall),
               ],
             ),
@@ -281,11 +283,11 @@ class _PriceCard extends StatelessWidget {
                   Text('Next Renewal', style: theme.textTheme.bodySmall),
                   const SizedBox(height: 4),
                   Text(
-                    _formatDate(subscription.nextBilling),
+                    _formatDate(subscription.nextBillingDate),
                     style: theme.textTheme.titleLarge
                         ?.copyWith(fontWeight: FontWeight.w700),
                   ),
-                  _DaysBadge2(days: subscription.daysUntilRenewal),
+                  _DaysBadge2(days: 2),
                 ],
               ),
             ),
@@ -324,7 +326,7 @@ class _DaysBadge2 extends StatelessWidget {
 }
 
 class _DetailCard extends StatelessWidget {
-  final SubscriptionModel subscription;
+  final SubscriptionDataModel subscription;
   final bool isDark;
   const _DetailCard({required this.subscription, required this.isDark});
 
@@ -339,9 +341,9 @@ class _DetailCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _Row(label: 'Category', value: subscription.categoryLabel, isDark: isDark),
+          _Row(label: 'Category', value: subscription.category, isDark: isDark),
           Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
-          _Row(label: 'Billing Cycle', value: subscription.cycleLabel, isDark: isDark),
+          _Row(label: 'Billing Cycle', value: subscription.billingCycle, isDark: isDark),
           Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
           _Row(
             label: 'Start Date',

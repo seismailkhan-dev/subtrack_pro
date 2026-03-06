@@ -40,9 +40,6 @@ class AppRouter {
         return _buildRoute(const HomeScreen(), settings);
       case AppRoutes.addSubscription:
         return _buildRoute(const AddSubscriptionScreen(), settings);
-      case AppRoutes.subscriptionDetail:
-        final sub = settings.arguments as SubscriptionModel;
-        return _buildRoute(SubscriptionDetailScreen(subscription: sub), settings);
       case AppRoutes.analytics:
         return _buildRoute(const AnalyticsScreen(), settings);
       case AppRoutes.calendar:

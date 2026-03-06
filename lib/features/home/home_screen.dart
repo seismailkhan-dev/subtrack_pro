@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:subtrack_pro/data/models/subcription_model.dart';
+import 'package:subtrack_pro/features/subscription_detail/subscription_detail_screen.dart';
 import 'package:subtrack_pro/shared/widgets/custom_loader.dart';
 import '../../controllers/get_subscription_controller.dart';
 import '../../core/theme/app_theme.dart';
@@ -74,8 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {});
         }),
         onSubTap: (sub) =>
-            Navigator.pushNamed(context, AppRoutes.subscriptionDetail,
-                arguments: sub),
+            Get.to((SubscriptionDetailScreen(subscription: sub,))),
         onSubDelete: (sub) =>
             setState(() => _subs.removeWhere((s) => s.id == sub.id)),
       ),
@@ -204,8 +204,8 @@ class _HomeDashboard extends StatelessWidget {
 
               // ── All Subscriptions ─────────────────────────────────────
               SectionHeader(
-                title: 'All Subscriptions',
-                action: 'See All',
+                title: 'Recent Subscriptions',
+                action: 'View All',
                 onAction: () {
                   Get.to(()=>AllSubscriptionsScreen());
                 },
@@ -219,6 +219,7 @@ class _HomeDashboard extends StatelessWidget {
                 } else {
                   // ✅ Return the ListView
                   return ListView.builder(
+                    padding: EdgeInsets.zero,
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
                     itemCount: getSubController.homeSubListModel.length,
