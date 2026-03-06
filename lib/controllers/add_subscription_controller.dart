@@ -182,7 +182,29 @@ class AddSubscriptionController extends GetxController {
           final subWithId = sub.copyWith(id: insertedId);
           await NotificationService().scheduleNotification(subWithId);
           // TEST: Schedule 10 minutes from now
-          await NotificationService().testScheduleNotification(subWithId);
+          // await NotificationService().testScheduleNotification(subWithId);
+          
+          // TEST: Add a mock sub for 5 days from now to test Upcoming Renewals
+          final testSub = SubscriptionDataModel(
+            subscriptionId: Uuid().v4(),
+            name: 'Test Upcoming Sub',
+            price: 9.99,
+            currency: 'USD',
+            billingCycle: 'monthly',
+            category: 'Productivity',
+            brandColor: 0xFFEF4444, // Red
+            categoryColor: 0xFF10B981, // Green
+            startDate: DateTime.now(),
+            nextBillingDate: DateTime.now().add(const Duration(days: 5)),
+            autoRenew: true,
+            freeTrial: false,
+            reminderDays: 3,
+            notes: 'Test sub exactly 5 days from now',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            isSynced: false,
+          );
+          await _drift.saveSubscription(testSub);
         }
       } else {
         // Update existing
@@ -217,7 +239,7 @@ class AddSubscriptionController extends GetxController {
           
           await NotificationService().scheduleNotification(sub);
           // TEST: Schedule 10 minutes from now
-          await NotificationService().testScheduleNotification(sub);
+          // await NotificationService().testScheduleNotification(sub);
         }
       }
       

@@ -13,6 +13,7 @@ class GetSubscriptionsController extends GetxController{
 
 
   RxList<SubscriptionDataModel> homeSubListModel = <SubscriptionDataModel>[].obs;
+  RxList<SubscriptionDataModel> upcomingSubListModel = <SubscriptionDataModel>[].obs;
   
   RxDouble totalMonthlySpend = 0.0.obs;
   RxDouble totalYearlySpend = 0.0.obs;
@@ -33,6 +34,11 @@ class GetSubscriptionsController extends GetxController{
 
       homeSubListModel.value= [];
       homeSubListModel.addAll(subs.take(limit).toList());
+
+      final upcoming = subs.where((s) => s.daysUntilRenewal <= 7 && s.daysUntilRenewal >= 0).toList()
+        ..sort((a, b) => a.daysUntilRenewal.compareTo(b.daysUntilRenewal));
+      upcomingSubListModel.value = upcoming;
+
       print('homeSubListModel ${homeSubListModel.length}');
     }catch(e){
       print('Error fetching home sub $e');

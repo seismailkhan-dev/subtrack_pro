@@ -57,6 +57,13 @@ class SubscriptionDataModel {
     return price; // yearly default
   }
 
+  int get daysUntilRenewal {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final billing = DateTime(nextBillingDate.year, nextBillingDate.month, nextBillingDate.day);
+    return billing.difference(today).inDays;
+  }
+
   SubscriptionDataModel copyWith({
     int? id,
     String? name,

@@ -168,20 +168,37 @@ class _HomeDashboard extends StatelessWidget {
               const SizedBox(height: 28),
 
               // ── Upcoming Renewals ─────────────────────────────────────
-              // if (upcoming.isNotEmpty) ...[
-              //   SectionHeader(
-              //     title: 'Upcoming Renewals',
-              //     action: 'See All',
-              //     onAction: () {},
-              //   ),
-              //   const SizedBox(height: 14),
-              //   ...upcoming.map((sub) => SubscriptionCard(
-              //         subscription: sub,
-              //         onTap: () => onSubTap(sub),
-              //         onDelete: () => onSubDelete(sub),
-              //       )),
-              //   const SizedBox(height: 28),
-              // ],
+              Obx(() {
+                if (getSubController.upcomingSubListModel.isNotEmpty) {
+                  return Column(
+                    children: [
+                      SectionHeader(
+                        title: 'Upcoming Renewals',
+                        action: '',
+                        onAction: () {
+                        },
+                      ),
+                      const SizedBox(height: 14),
+                      ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: getSubController.upcomingSubListModel.length,
+                        itemBuilder: (ctx, index) {
+                          final sub = getSubController.upcomingSubListModel[index];
+                          return SubscriptionCard(
+                            subscription: sub,
+                            onTap: () => onSubTap(sub),
+                            onDelete: () => onSubDelete(sub),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 28),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
 
               // ── All Subscriptions ─────────────────────────────────────
               SectionHeader(
