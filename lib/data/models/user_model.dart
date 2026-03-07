@@ -6,6 +6,7 @@ class UserModel {
   final bool isSynced;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final double monthlyBudget;
 
   UserModel({
     required this.id,
@@ -15,6 +16,7 @@ class UserModel {
     this.isSynced = false,
     required this.createdAt,
     required this.updatedAt,
+    this.monthlyBudget = 0.0,
   });
 
   /// ✅ ADD THIS
@@ -24,6 +26,7 @@ class UserModel {
     bool? isPremiumUser,
     bool? isSynced,
     DateTime? updatedAt,
+    double? monthlyBudget,
   }) {
     return UserModel(
       id: id,
@@ -33,6 +36,7 @@ class UserModel {
       isSynced: isSynced ?? this.isSynced,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      monthlyBudget: monthlyBudget ?? this.monthlyBudget,
     );
   }
 
@@ -45,6 +49,7 @@ class UserModel {
       isSynced: json['isSynced'] ?? false,
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
+      monthlyBudget: (json['monthlyBudget'] ?? 0.0).toDouble(),
     );
   }
 
@@ -57,6 +62,7 @@ class UserModel {
       'isSynced': isSynced,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'monthlyBudget': monthlyBudget,
     };
   }
 }

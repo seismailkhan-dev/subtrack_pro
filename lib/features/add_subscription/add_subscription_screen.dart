@@ -330,11 +330,10 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                       title: 'Auto Renew',
                       subtitle: 'Automatically renews on billing date',
                       value: subController.autoRenew.value,
-                      onChanged: (v) => subController.changeAutoRenew(v), context: context,
+                      onChanged: (v) => subController.changeAutoRenew(v),
                     ),
                   ),
                   const SizedBox(height: 12),
-
 
                   // Free Trial
                   CustomCardTheme(
@@ -344,7 +343,6 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                       subtitle: 'Subscription starts automatically after the trial.',
                       value: subController.freeTrial.value,
                       onChanged: (v) => subController.changeFreeTrail(v),
-                      context: context,
                     ),
                   ),
                   const SizedBox(height: 12),

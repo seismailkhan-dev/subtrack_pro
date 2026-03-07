@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:subtrack_pro/core/services/format_service.dart';
-import 'package:subtrack_pro/data/models/subcription_model.dart';
-
-import '../../core/constants/app_constants.dart';
+import '../../core/services/format_service.dart';
+import '../../data/models/subcription_model.dart';
 import '../../core/theme/app_theme.dart';
 
 
@@ -154,6 +152,7 @@ class AppTextField extends StatelessWidget {
   final int maxLines;
   final VoidCallback? onTap;
   final bool readOnly;
+  final bool autofocus;
 
   const AppTextField({
     super.key,
@@ -168,6 +167,7 @@ class AppTextField extends StatelessWidget {
     this.maxLines = 1,
     this.onTap,
     this.readOnly = false,
+    this.autofocus = false,
   });
 
   @override
@@ -186,6 +186,7 @@ class AppTextField extends StatelessWidget {
           maxLines: maxLines,
           onTap: onTap,
           readOnly: readOnly,
+          autofocus: autofocus,
           style: theme.textTheme.bodyLarge?.copyWith(
             color: theme.colorScheme.onSurface,
           ),
@@ -271,7 +272,7 @@ class SubscriptionCard extends StatelessWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: brandColor.withOpacity(0.15),
+                      color: brandColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
@@ -371,7 +372,7 @@ class _CategoryChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -415,7 +416,7 @@ class _DaysBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -572,7 +573,7 @@ class InsightCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -759,7 +760,7 @@ class SheetHandle extends StatelessWidget {
         height: 4,
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
-          color: AppColors.textTertiaryLight.withOpacity(0.4),
+          color: AppColors.textTertiaryLight.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(AppRadius.full),
         ),
       ),
@@ -845,7 +846,7 @@ class SettingsTile extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, size: 18, color: color),
@@ -1019,7 +1020,7 @@ class EmptyState extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 36, color: AppColors.primary),

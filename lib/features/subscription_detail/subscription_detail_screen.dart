@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:subtrack_pro/core/services/format_service.dart';
 import 'package:subtrack_pro/data/models/subcription_model.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/constants/app_constants.dart';
 import '../../shared/widgets/app_widgets.dart';
 import '../add_subscription/add_subscription_screen.dart';
 import '../../controllers/get_subscription_controller.dart';
@@ -149,10 +148,30 @@ class SubscriptionDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 28),
 
+                const SizedBox(height: 28),
+
+                // Log Usage Button
+                AppButton(
+                  label: 'Log Usage Today',
+                  onTap: () {
+                    GetSubscriptionsController.to.updateLastUsedDate(subscription);
+                    Get.back();
+                    Get.snackbar(
+                      'Usage Logged',
+                      'Successfully updated usage for ${subscription.name}',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.green,
+                      colorText: Colors.white,
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
                 // Delete Button
                 AppButton(
                   label: 'Delete Subscription',
-                  color: AppColors.danger,
+                  color: AppColors.primary,
                   onTap: () => _showDeleteDialog(context),
                 ),
               ]),
@@ -408,7 +427,6 @@ class _SubBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return BarChart(
       BarChartData(
         gridData: const FlGridData(show: false),

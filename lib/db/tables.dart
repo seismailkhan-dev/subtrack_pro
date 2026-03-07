@@ -13,6 +13,7 @@ class UsersTable extends Table {
   BoolColumn get isPremiumUser => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
+  RealColumn get monthlyBudget => real().withDefault(const Constant(0.0))();
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
 
   @override
@@ -44,6 +45,7 @@ class SubscriptionsTable extends Table {
   TextColumn get notes => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get lastUsedDate => dateTime().nullable()();
   BoolColumn get isSynced =>
       boolean().withDefault(const Constant(false))();
 }

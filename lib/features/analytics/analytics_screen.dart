@@ -7,6 +7,7 @@ import '../../controllers/analytics_controller.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
 import '../../shared/widgets/app_widgets.dart';
+import '../../controllers/app_controller.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -99,7 +100,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
+
+              // Budget Progress Card
+              if (AppController.to.monthlyBudget.value > 0) ...[
+                _BudgetProgressCard(
+                  totalSpend: controller.totalMonthlySpend.value,
+                  budget: AppController.to.monthlyBudget.value,
+                ),
+                const SizedBox(height: 24),
+              ],
 
               // Monthly Spend Chart
               ChartContainer(
@@ -480,6 +490,87 @@ class _SavingsCard extends StatelessWidget {
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
                     fontSize: 13)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BudgetProgressCard extends StatelessWidget {
+  final double totalSpend;
+  final double budget;
+
+  const _BudgetProgressCard({
+    required this.totalSpend,
+    required this.budget,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final progress = (totalSpend / budget).clamp(0.0, 1.0);
+    final isOverBudget = totalSpend > budget;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: isOverBudget ? AppColors.danger.withOpacity(0.5) : (isDark ? AppColors.borderDark : AppColors.borderLight),
+          width: isOverBudget ? 2 : 1,
+        ),
+        boxShadow: isDark ? null : AppShadows.sm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Monthly Budget', style: theme.textTheme.titleMedium),
+              Text(
+                '${(progress * 100).toStringAsFixed(0)}%',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: isOverBudget ? AppColors.danger : theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.full),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 10,
+              backgroundColor: isDark ? Colors.white12 : Colors.black.withOpacity(0.05),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                isOverBudget ? AppColors.danger : theme.colorScheme.primary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '\$${totalSpend.toStringAsFixed(2)} spent / \$${budget.toStringAsFixed(0)}',
+                style: theme.textTheme.bodySmall,
+              ),
+              if (isOverBudget)
+                 Text(
+                  'Over by \$${(totalSpend - budget).toStringAsFixed(2)}',
+                  style: const TextStyle(color: AppColors.danger, fontSize: 11, fontWeight: FontWeight.w600),
+                )
+              else
+                Text(
+                  '\$${(budget - totalSpend).toStringAsFixed(2)} left',
+                  style: const TextStyle(color: AppColors.success, fontSize: 11, fontWeight: FontWeight.w600),
+                ),
+            ],
           ),
         ],
       ),

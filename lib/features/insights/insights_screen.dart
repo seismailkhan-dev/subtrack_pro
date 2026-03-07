@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../shared/widgets/app_widgets.dart';
+import '../../shared/widgets/app_widgets.dart';
+import '../../controllers/insights_controller.dart';
+import 'package:get/get.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/constants/app_constants.dart';
 
 class InsightsScreen extends StatelessWidget {
   const InsightsScreen({super.key});
@@ -10,95 +12,135 @@ class InsightsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final controller = Get.put(InsightsController());
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Smart Insights'),
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list_rounded),
-            onPressed: () {},
+      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Score Card
+              _SpendScoreCard(
+                isDark: isDark,
+                score: controller.spendScore.value,
+                label: controller.scoreLabel.value,
+              ),
+              const SizedBox(height: 24),
+
+              // Insight Pills
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _FilterChip(
+                      label: 'All',
+                      isSelected: controller.selectedFilter.value == 'All',
+                      onTap: () => controller.setFilter('All'),
+                    ),
+                    const SizedBox(width: 8),
+                    _FilterChip(
+                      label: '⚠️ Alerts',
+                      isSelected: controller.selectedFilter.value == '⚠️ Alerts',
+                      onTap: () => controller.setFilter('⚠️ Alerts'),
+                    ),
+                    const SizedBox(width: 8),
+                    _FilterChip(
+                      label: '💰 Savings',
+                      isSelected: controller.selectedFilter.value == '💰 Savings',
+                      onTap: () => controller.setFilter('💰 Savings'),
+                    ),
+                    const SizedBox(width: 8),
+                    _FilterChip(
+                      label: '📊 Trends',
+                      isSelected: controller.selectedFilter.value == '📊 Trends',
+                      onTap: () => controller.setFilter('📊 Trends'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Insight Cards
+              if (controller.filteredInsights.isEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    child: Column(
+                      children: [
+                        Icon(Icons.auto_awesome_outlined, 
+                            size: 48, color: theme.colorScheme.primary.withOpacity(0.5)),
+                        const SizedBox(height: 16),
+                        Text('No insights for this category', 
+                            style: theme.textTheme.bodyMedium),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                ...controller.filteredInsights.map(
+                  (card) => InsightCard(
+                    title: card['title'] as String,
+                    body: card['body'] as String,
+                    icon: card['icon'] as IconData,
+                    color: card['color'] as Color,
+                    actionLabel: card['action'] as String,
+                    onAction: () {},
+                  ),
+                ),
+
+              const SizedBox(height: 8),
+
+              // Unused Subscriptions (Logic-based)
+              if (controller.allSubscriptions.any((s) => s.lastUsedDate != null && DateTime.now().difference(s.lastUsedDate!).inDays >= 30)) ...[
+                Text('Unused Services', style: theme.textTheme.headlineSmall),
+                const SizedBox(height: 4),
+                Text("Services you haven't engaged with recently",
+                    style: theme.textTheme.bodySmall),
+                const SizedBox(height: 14),
+                ...controller.allSubscriptions
+                    .where((s) => s.lastUsedDate != null && DateTime.now().difference(s.lastUsedDate!).inDays >= 30)
+                    .map((sub) => _UnusedCard(
+                          name: sub.name,
+                          logoLetter: sub.name.isNotEmpty ? sub.name[0].toUpperCase() : '?',
+                          color: Color(sub.brandColor),
+                          price: sub.price,
+                          daysUnused: DateTime.now().difference(sub.lastUsedDate!).inDays,
+                          isDark: isDark,
+                        )),
+              ],
+
+              const SizedBox(height: 24),
+
+              // Pro Upsell
+              _ProUpsellCard(),
+            ],
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Score Card
-            _SpendScoreCard(isDark: isDark),
-            const SizedBox(height: 24),
-
-            // Insight Pills
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: const [
-                  _FilterChip(label: 'All', isSelected: true),
-                  SizedBox(width: 8),
-                  _FilterChip(label: '⚠️ Alerts'),
-                  SizedBox(width: 8),
-                  _FilterChip(label: '💰 Savings'),
-                  SizedBox(width: 8),
-                  _FilterChip(label: '📊 Trends'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Insight Cards
-            ...AppConstants.insightCards.map(
-              (card) => InsightCard(
-                title: card['title'] as String,
-                body: card['body'] as String,
-                icon: card['icon'] as IconData,
-                color: card['color'] as Color,
-                actionLabel: card['action'] as String,
-                onAction: () {},
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // Unused Subscriptions
-            Text('Unused Services', style: theme.textTheme.headlineSmall),
-            const SizedBox(height: 4),
-            Text("Services you haven't engaged with recently",
-                style: theme.textTheme.bodySmall),
-            const SizedBox(height: 14),
-            _UnusedCard(
-              name: 'Netflix',
-              logoLetter: 'N',
-              color: const Color(0xFFE50914),
-              price: 15.99,
-              daysUnused: 30,
-              isDark: isDark,
-            ),
-            _UnusedCard(
-              name: 'Adobe CC',
-              logoLetter: 'A',
-              color: const Color(0xFFFF0000),
-              price: 54.99,
-              daysUnused: 12,
-              isDark: isDark,
-            ),
-
-            const SizedBox(height: 24),
-
-            // Pro Upsell
-            _ProUpsellCard(),
-          ],
-        ),
-      ),
+        );
+      }),
     );
   }
 }
 
 class _SpendScoreCard extends StatelessWidget {
   final bool isDark;
-  const _SpendScoreCard({required this.isDark});
+  final int score;
+  final String label;
+
+  const _SpendScoreCard({
+    required this.isDark,
+    required this.score,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -121,14 +163,14 @@ class _SpendScoreCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: const [
-                    Text('72',
-                        style: TextStyle(
+                  children: [
+                    Text('$score',
+                        style: const TextStyle(
                             color: Colors.white,
                             fontSize: 48,
                             fontWeight: FontWeight.w900,
                             letterSpacing: -2)),
-                    Padding(
+                    const Padding(
                       padding: EdgeInsets.only(bottom: 10),
                       child: Text('/100',
                           style: TextStyle(
@@ -138,8 +180,8 @@ class _SpendScoreCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Text('Good — a few improvements possible',
-                    style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(label,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12)),
               ],
             ),
           ),
@@ -156,7 +198,7 @@ class _SpendScoreCard extends StatelessWidget {
                   color: Colors.transparent,
                 ),
                 CircularProgressIndicator(
-                  value: 0.72,
+                  value: score / 100,
                   strokeWidth: 8,
                   backgroundColor: Colors.white.withOpacity(0.15),
                   color: Colors.white,
@@ -177,31 +219,40 @@ class _SpendScoreCard extends StatelessWidget {
 class _FilterChip extends StatelessWidget {
   final String label;
   final bool isSelected;
-  const _FilterChip({required this.label, this.isSelected = false});
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.onTap,
+    this.isSelected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected
-            ? AppColors.primary
-            : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight),
-        borderRadius: BorderRadius.circular(AppRadius.full),
-        border: Border.all(
-            color: isSelected
-                ? AppColors.primary
-                : (isDark ? AppColors.borderDark : AppColors.borderLight)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
           color: isSelected
-              ? Colors.white
-              : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
+              ? AppColors.primary
+              : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight),
+          borderRadius: BorderRadius.circular(AppRadius.full),
+          border: Border.all(
+              color: isSelected
+                  ? AppColors.primary
+                  : (isDark ? AppColors.borderDark : AppColors.borderLight)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected
+                ? Colors.white
+                : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

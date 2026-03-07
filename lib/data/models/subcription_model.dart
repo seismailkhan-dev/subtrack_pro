@@ -20,6 +20,7 @@ class SubscriptionDataModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isSynced;
+  final DateTime? lastUsedDate;
 
   SubscriptionDataModel({
     this.id,
@@ -40,6 +41,7 @@ class SubscriptionDataModel {
     required this.createdAt,
     required this.updatedAt,
     required this.isSynced, required this.nextBillingDate,
+    this.lastUsedDate,
   });
 
   Color get brandColorAsColor => Color(brandColor);
@@ -91,6 +93,7 @@ class SubscriptionDataModel {
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isSynced,
+    DateTime? lastUsedDate,
   }) {
     return SubscriptionDataModel(
       id: id ?? this.id,
@@ -110,7 +113,9 @@ class SubscriptionDataModel {
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      isSynced: isSynced ?? this.isSynced, nextBillingDate: nextBillingDate?? this.nextBillingDate,
+      isSynced: isSynced ?? this.isSynced, 
+      nextBillingDate: nextBillingDate?? this.nextBillingDate,
+      lastUsedDate: lastUsedDate ?? this.lastUsedDate,
     );
   }
 }

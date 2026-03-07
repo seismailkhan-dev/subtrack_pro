@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:subtrack_pro/core/services/sharedpref_service.dart';
 import 'package:subtrack_pro/features/auth/auth_screen.dart';
@@ -17,6 +16,7 @@ class AppController extends GetxController{
   final hasLoggedInBefore = false.obs;
 
   Rxn<UserModel> userData = Rxn<UserModel>();
+  final monthlyBudget = 0.0.obs;
 
   final DriftService _drift = DriftService();
 
@@ -48,6 +48,32 @@ class AppController extends GetxController{
     if(localUser!=null){
       userData.value = localUser;
       isPremium.value = localUser.isPremiumUser;
+      monthlyBudget.value = localUser.monthlyBudget;
+    }
+  }
+
+  Future<void> updateMonthlyBudget(double budget) async {
+    if (userData.value == null) {
+      // Create a default guest user if none exists
+      final newUser = UserModel(
+        id: 'guest_${DateTime.now().millisecondsSinceEpoch}',
+        name: 'Guest User',
+        email: 'guest@subtrack.pro',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        monthlyBudget: budget,
+      );
+      await _drift.saveUser(newUser);
+      userData.value = newUser;
+      monthlyBudget.value = budget;
+    } else {
+      final updatedUser = userData.value!.copyWith(
+        monthlyBudget: budget,
+        updatedAt: DateTime.now(),
+      );
+      await _drift.saveUser(updatedUser);
+      userData.value = updatedUser;
+      monthlyBudget.value = budget;
     }
   }
 

@@ -15,6 +15,7 @@ class DriftService {
       isPremiumUser: Value(user.isPremiumUser),
       createdAt: Value(user.createdAt),
       updatedAt: Value(user.updatedAt),
+      monthlyBudget: Value(user.monthlyBudget),
       isSynced: Value(user.isSynced),
     ),
   );
@@ -29,6 +30,7 @@ class DriftService {
       isPremiumUser: row.isPremiumUser,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+      monthlyBudget: row.monthlyBudget,
       isSynced: row.isSynced,
     );
   }
@@ -46,6 +48,7 @@ class DriftService {
       isPremiumUser: row.isPremiumUser,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+      monthlyBudget: row.monthlyBudget,
       isSynced: row.isSynced,
     );
   }
@@ -92,6 +95,7 @@ class DriftService {
         notes: Value(sub.notes),
         createdAt: Value(sub.createdAt),
         updatedAt: Value(sub.updatedAt),
+        lastUsedDate: Value(sub.lastUsedDate),
         isSynced: Value(sub.isSynced),
       ),
     );
@@ -147,6 +151,7 @@ class DriftService {
         createdAt: e.createdAt,
         updatedAt: e.updatedAt,
         isSynced: e.isSynced,
+        lastUsedDate: e.lastUsedDate,
       );
     }).toList();
   }
@@ -175,6 +180,7 @@ class DriftService {
           createdAt: e.createdAt,
           updatedAt: e.updatedAt,
           isSynced: e.isSynced,
+          lastUsedDate: e.lastUsedDate,
         ),
       )
           .toList(),

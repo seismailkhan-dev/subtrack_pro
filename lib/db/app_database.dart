@@ -36,7 +36,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -48,6 +48,10 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(subscriptionsTable, subscriptionsTable.brandColor);
             await m.addColumn(
                 subscriptionsTable, subscriptionsTable.categoryColor);
+          }
+          if (from < 3) {
+            await m.addColumn(usersTable, usersTable.monthlyBudget);
+            await m.addColumn(subscriptionsTable, subscriptionsTable.lastUsedDate);
           }
         },
       );

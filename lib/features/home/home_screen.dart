@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int _tabIndex = 0;
 
-  final _screens = [
+  final List<Widget?> _screens = [
     null, // Home (this)
     const AnalyticsScreen(),
     const CalendarScreen(),

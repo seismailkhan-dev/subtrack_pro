@@ -213,6 +213,17 @@ class $SubscriptionsTableTable extends SubscriptionsTable
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _lastUsedDateMeta = const VerificationMeta(
+    'lastUsedDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastUsedDate = GeneratedColumn<DateTime>(
+    'last_used_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _isSyncedMeta = const VerificationMeta(
     'isSynced',
   );
@@ -248,6 +259,7 @@ class $SubscriptionsTableTable extends SubscriptionsTable
     notes,
     createdAt,
     updatedAt,
+    lastUsedDate,
     isSynced,
   ];
   @override
@@ -402,6 +414,15 @@ class $SubscriptionsTableTable extends SubscriptionsTable
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('last_used_date')) {
+      context.handle(
+        _lastUsedDateMeta,
+        lastUsedDate.isAcceptableOrUnknown(
+          data['last_used_date']!,
+          _lastUsedDateMeta,
+        ),
+      );
+    }
     if (data.containsKey('is_synced')) {
       context.handle(
         _isSyncedMeta,
@@ -489,6 +510,10 @@ class $SubscriptionsTableTable extends SubscriptionsTable
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      lastUsedDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_used_date'],
+      ),
       isSynced: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_synced'],
@@ -522,6 +547,7 @@ class SubscriptionsTableData extends DataClass
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? lastUsedDate;
   final bool isSynced;
   const SubscriptionsTableData({
     this.userId,
@@ -542,6 +568,7 @@ class SubscriptionsTableData extends DataClass
     this.notes,
     required this.createdAt,
     required this.updatedAt,
+    this.lastUsedDate,
     required this.isSynced,
   });
   @override
@@ -569,6 +596,9 @@ class SubscriptionsTableData extends DataClass
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || lastUsedDate != null) {
+      map['last_used_date'] = Variable<DateTime>(lastUsedDate);
+    }
     map['is_synced'] = Variable<bool>(isSynced);
     return map;
   }
@@ -597,6 +627,9 @@ class SubscriptionsTableData extends DataClass
           : Value(notes),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      lastUsedDate: lastUsedDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastUsedDate),
       isSynced: Value(isSynced),
     );
   }
@@ -625,6 +658,7 @@ class SubscriptionsTableData extends DataClass
       notes: serializer.fromJson<String?>(json['notes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      lastUsedDate: serializer.fromJson<DateTime?>(json['lastUsedDate']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
   }
@@ -650,6 +684,7 @@ class SubscriptionsTableData extends DataClass
       'notes': serializer.toJson<String?>(notes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'lastUsedDate': serializer.toJson<DateTime?>(lastUsedDate),
       'isSynced': serializer.toJson<bool>(isSynced),
     };
   }
@@ -673,6 +708,7 @@ class SubscriptionsTableData extends DataClass
     Value<String?> notes = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
+    Value<DateTime?> lastUsedDate = const Value.absent(),
     bool? isSynced,
   }) => SubscriptionsTableData(
     userId: userId.present ? userId.value : this.userId,
@@ -693,6 +729,7 @@ class SubscriptionsTableData extends DataClass
     notes: notes.present ? notes.value : this.notes,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    lastUsedDate: lastUsedDate.present ? lastUsedDate.value : this.lastUsedDate,
     isSynced: isSynced ?? this.isSynced,
   );
   SubscriptionsTableData copyWithCompanion(SubscriptionsTableCompanion data) {
@@ -727,6 +764,9 @@ class SubscriptionsTableData extends DataClass
       notes: data.notes.present ? data.notes.value : this.notes,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      lastUsedDate: data.lastUsedDate.present
+          ? data.lastUsedDate.value
+          : this.lastUsedDate,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
   }
@@ -752,6 +792,7 @@ class SubscriptionsTableData extends DataClass
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('lastUsedDate: $lastUsedDate, ')
           ..write('isSynced: $isSynced')
           ..write(')'))
         .toString();
@@ -777,6 +818,7 @@ class SubscriptionsTableData extends DataClass
     notes,
     createdAt,
     updatedAt,
+    lastUsedDate,
     isSynced,
   );
   @override
@@ -801,6 +843,7 @@ class SubscriptionsTableData extends DataClass
           other.notes == this.notes &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
+          other.lastUsedDate == this.lastUsedDate &&
           other.isSynced == this.isSynced);
 }
 
@@ -824,6 +867,7 @@ class SubscriptionsTableCompanion
   final Value<String?> notes;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<DateTime?> lastUsedDate;
   final Value<bool> isSynced;
   const SubscriptionsTableCompanion({
     this.userId = const Value.absent(),
@@ -844,6 +888,7 @@ class SubscriptionsTableCompanion
     this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.lastUsedDate = const Value.absent(),
     this.isSynced = const Value.absent(),
   });
   SubscriptionsTableCompanion.insert({
@@ -865,6 +910,7 @@ class SubscriptionsTableCompanion
     this.notes = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
+    this.lastUsedDate = const Value.absent(),
     this.isSynced = const Value.absent(),
   }) : name = Value(name),
        subscriptionId = Value(subscriptionId),
@@ -895,6 +941,7 @@ class SubscriptionsTableCompanion
     Expression<String>? notes,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<DateTime>? lastUsedDate,
     Expression<bool>? isSynced,
   }) {
     return RawValuesInsertable({
@@ -916,6 +963,7 @@ class SubscriptionsTableCompanion
       if (notes != null) 'notes': notes,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (lastUsedDate != null) 'last_used_date': lastUsedDate,
       if (isSynced != null) 'is_synced': isSynced,
     });
   }
@@ -939,6 +987,7 @@ class SubscriptionsTableCompanion
     Value<String?>? notes,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<DateTime?>? lastUsedDate,
     Value<bool>? isSynced,
   }) {
     return SubscriptionsTableCompanion(
@@ -960,6 +1009,7 @@ class SubscriptionsTableCompanion
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      lastUsedDate: lastUsedDate ?? this.lastUsedDate,
       isSynced: isSynced ?? this.isSynced,
     );
   }
@@ -1021,6 +1071,9 @@ class SubscriptionsTableCompanion
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (lastUsedDate.present) {
+      map['last_used_date'] = Variable<DateTime>(lastUsedDate.value);
+    }
     if (isSynced.present) {
       map['is_synced'] = Variable<bool>(isSynced.value);
     }
@@ -1048,6 +1101,7 @@ class SubscriptionsTableCompanion
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('lastUsedDate: $lastUsedDate, ')
           ..write('isSynced: $isSynced')
           ..write(')'))
         .toString();
@@ -1124,6 +1178,18 @@ class $UsersTableTable extends UsersTable
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _monthlyBudgetMeta = const VerificationMeta(
+    'monthlyBudget',
+  );
+  @override
+  late final GeneratedColumn<double> monthlyBudget = GeneratedColumn<double>(
+    'monthly_budget',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   static const VerificationMeta _isSyncedMeta = const VerificationMeta(
     'isSynced',
   );
@@ -1147,6 +1213,7 @@ class $UsersTableTable extends UsersTable
     isPremiumUser,
     createdAt,
     updatedAt,
+    monthlyBudget,
     isSynced,
   ];
   @override
@@ -1207,6 +1274,15 @@ class $UsersTableTable extends UsersTable
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('monthly_budget')) {
+      context.handle(
+        _monthlyBudgetMeta,
+        monthlyBudget.isAcceptableOrUnknown(
+          data['monthly_budget']!,
+          _monthlyBudgetMeta,
+        ),
+      );
+    }
     if (data.containsKey('is_synced')) {
       context.handle(
         _isSyncedMeta,
@@ -1246,6 +1322,10 @@ class $UsersTableTable extends UsersTable
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      monthlyBudget: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}monthly_budget'],
+      )!,
       isSynced: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_synced'],
@@ -1266,6 +1346,7 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
   final bool isPremiumUser;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final double monthlyBudget;
   final bool isSynced;
   const UsersTableData({
     required this.id,
@@ -1274,6 +1355,7 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
     required this.isPremiumUser,
     required this.createdAt,
     required this.updatedAt,
+    required this.monthlyBudget,
     required this.isSynced,
   });
   @override
@@ -1285,6 +1367,7 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
     map['is_premium_user'] = Variable<bool>(isPremiumUser);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['monthly_budget'] = Variable<double>(monthlyBudget);
     map['is_synced'] = Variable<bool>(isSynced);
     return map;
   }
@@ -1297,6 +1380,7 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
       isPremiumUser: Value(isPremiumUser),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      monthlyBudget: Value(monthlyBudget),
       isSynced: Value(isSynced),
     );
   }
@@ -1313,6 +1397,7 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
       isPremiumUser: serializer.fromJson<bool>(json['isPremiumUser']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      monthlyBudget: serializer.fromJson<double>(json['monthlyBudget']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
   }
@@ -1326,6 +1411,7 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
       'isPremiumUser': serializer.toJson<bool>(isPremiumUser),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'monthlyBudget': serializer.toJson<double>(monthlyBudget),
       'isSynced': serializer.toJson<bool>(isSynced),
     };
   }
@@ -1337,6 +1423,7 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
     bool? isPremiumUser,
     DateTime? createdAt,
     DateTime? updatedAt,
+    double? monthlyBudget,
     bool? isSynced,
   }) => UsersTableData(
     id: id ?? this.id,
@@ -1345,6 +1432,7 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
     isPremiumUser: isPremiumUser ?? this.isPremiumUser,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    monthlyBudget: monthlyBudget ?? this.monthlyBudget,
     isSynced: isSynced ?? this.isSynced,
   );
   UsersTableData copyWithCompanion(UsersTableCompanion data) {
@@ -1357,6 +1445,9 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
           : this.isPremiumUser,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      monthlyBudget: data.monthlyBudget.present
+          ? data.monthlyBudget.value
+          : this.monthlyBudget,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
   }
@@ -1370,6 +1461,7 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
           ..write('isPremiumUser: $isPremiumUser, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('monthlyBudget: $monthlyBudget, ')
           ..write('isSynced: $isSynced')
           ..write(')'))
         .toString();
@@ -1383,6 +1475,7 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
     isPremiumUser,
     createdAt,
     updatedAt,
+    monthlyBudget,
     isSynced,
   );
   @override
@@ -1395,6 +1488,7 @@ class UsersTableData extends DataClass implements Insertable<UsersTableData> {
           other.isPremiumUser == this.isPremiumUser &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
+          other.monthlyBudget == this.monthlyBudget &&
           other.isSynced == this.isSynced);
 }
 
@@ -1405,6 +1499,7 @@ class UsersTableCompanion extends UpdateCompanion<UsersTableData> {
   final Value<bool> isPremiumUser;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<double> monthlyBudget;
   final Value<bool> isSynced;
   final Value<int> rowid;
   const UsersTableCompanion({
@@ -1414,6 +1509,7 @@ class UsersTableCompanion extends UpdateCompanion<UsersTableData> {
     this.isPremiumUser = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.monthlyBudget = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1424,6 +1520,7 @@ class UsersTableCompanion extends UpdateCompanion<UsersTableData> {
     this.isPremiumUser = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
+    this.monthlyBudget = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -1438,6 +1535,7 @@ class UsersTableCompanion extends UpdateCompanion<UsersTableData> {
     Expression<bool>? isPremiumUser,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<double>? monthlyBudget,
     Expression<bool>? isSynced,
     Expression<int>? rowid,
   }) {
@@ -1448,6 +1546,7 @@ class UsersTableCompanion extends UpdateCompanion<UsersTableData> {
       if (isPremiumUser != null) 'is_premium_user': isPremiumUser,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (monthlyBudget != null) 'monthly_budget': monthlyBudget,
       if (isSynced != null) 'is_synced': isSynced,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1460,6 +1559,7 @@ class UsersTableCompanion extends UpdateCompanion<UsersTableData> {
     Value<bool>? isPremiumUser,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<double>? monthlyBudget,
     Value<bool>? isSynced,
     Value<int>? rowid,
   }) {
@@ -1470,6 +1570,7 @@ class UsersTableCompanion extends UpdateCompanion<UsersTableData> {
       isPremiumUser: isPremiumUser ?? this.isPremiumUser,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      monthlyBudget: monthlyBudget ?? this.monthlyBudget,
       isSynced: isSynced ?? this.isSynced,
       rowid: rowid ?? this.rowid,
     );
@@ -1496,6 +1597,9 @@ class UsersTableCompanion extends UpdateCompanion<UsersTableData> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (monthlyBudget.present) {
+      map['monthly_budget'] = Variable<double>(monthlyBudget.value);
+    }
     if (isSynced.present) {
       map['is_synced'] = Variable<bool>(isSynced.value);
     }
@@ -1514,6 +1618,7 @@ class UsersTableCompanion extends UpdateCompanion<UsersTableData> {
           ..write('isPremiumUser: $isPremiumUser, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('monthlyBudget: $monthlyBudget, ')
           ..write('isSynced: $isSynced, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -1557,6 +1662,7 @@ typedef $$SubscriptionsTableTableCreateCompanionBuilder =
       Value<String?> notes,
       required DateTime createdAt,
       required DateTime updatedAt,
+      Value<DateTime?> lastUsedDate,
       Value<bool> isSynced,
     });
 typedef $$SubscriptionsTableTableUpdateCompanionBuilder =
@@ -1579,6 +1685,7 @@ typedef $$SubscriptionsTableTableUpdateCompanionBuilder =
       Value<String?> notes,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<DateTime?> lastUsedDate,
       Value<bool> isSynced,
     });
 
@@ -1678,6 +1785,11 @@ class $$SubscriptionsTableTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastUsedDate => $composableBuilder(
+    column: $table.lastUsedDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1786,6 +1898,11 @@ class $$SubscriptionsTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get lastUsedDate => $composableBuilder(
+    column: $table.lastUsedDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isSynced => $composableBuilder(
     column: $table.isSynced,
     builder: (column) => ColumnOrderings(column),
@@ -1867,6 +1984,11 @@ class $$SubscriptionsTableTableAnnotationComposer
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
+  GeneratedColumn<DateTime> get lastUsedDate => $composableBuilder(
+    column: $table.lastUsedDate,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get isSynced =>
       $composableBuilder(column: $table.isSynced, builder: (column) => column);
 }
@@ -1929,6 +2051,7 @@ class $$SubscriptionsTableTableTableManager
                 Value<String?> notes = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> lastUsedDate = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
               }) => SubscriptionsTableCompanion(
                 userId: userId,
@@ -1949,6 +2072,7 @@ class $$SubscriptionsTableTableTableManager
                 notes: notes,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                lastUsedDate: lastUsedDate,
                 isSynced: isSynced,
               ),
           createCompanionCallback:
@@ -1971,6 +2095,7 @@ class $$SubscriptionsTableTableTableManager
                 Value<String?> notes = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
+                Value<DateTime?> lastUsedDate = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
               }) => SubscriptionsTableCompanion.insert(
                 userId: userId,
@@ -1991,6 +2116,7 @@ class $$SubscriptionsTableTableTableManager
                 notes: notes,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                lastUsedDate: lastUsedDate,
                 isSynced: isSynced,
               ),
           withReferenceMapper: (p0) => p0
@@ -2030,6 +2156,7 @@ typedef $$UsersTableTableCreateCompanionBuilder =
       Value<bool> isPremiumUser,
       required DateTime createdAt,
       required DateTime updatedAt,
+      Value<double> monthlyBudget,
       Value<bool> isSynced,
       Value<int> rowid,
     });
@@ -2041,6 +2168,7 @@ typedef $$UsersTableTableUpdateCompanionBuilder =
       Value<bool> isPremiumUser,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<double> monthlyBudget,
       Value<bool> isSynced,
       Value<int> rowid,
     });
@@ -2081,6 +2209,11 @@ class $$UsersTableTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get monthlyBudget => $composableBuilder(
+    column: $table.monthlyBudget,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2129,6 +2262,11 @@ class $$UsersTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get monthlyBudget => $composableBuilder(
+    column: $table.monthlyBudget,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isSynced => $composableBuilder(
     column: $table.isSynced,
     builder: (column) => ColumnOrderings(column),
@@ -2163,6 +2301,11 @@ class $$UsersTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<double> get monthlyBudget => $composableBuilder(
+    column: $table.monthlyBudget,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get isSynced =>
       $composableBuilder(column: $table.isSynced, builder: (column) => column);
@@ -2205,6 +2348,7 @@ class $$UsersTableTableTableManager
                 Value<bool> isPremiumUser = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<double> monthlyBudget = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UsersTableCompanion(
@@ -2214,6 +2358,7 @@ class $$UsersTableTableTableManager
                 isPremiumUser: isPremiumUser,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                monthlyBudget: monthlyBudget,
                 isSynced: isSynced,
                 rowid: rowid,
               ),
@@ -2225,6 +2370,7 @@ class $$UsersTableTableTableManager
                 Value<bool> isPremiumUser = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
+                Value<double> monthlyBudget = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UsersTableCompanion.insert(
@@ -2234,6 +2380,7 @@ class $$UsersTableTableTableManager
                 isPremiumUser: isPremiumUser,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                monthlyBudget: monthlyBudget,
                 isSynced: isSynced,
                 rowid: rowid,
               ),

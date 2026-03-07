@@ -3,9 +3,9 @@ import 'package:get/get.dart';
 import 'package:subtrack_pro/controllers/app_controller.dart';
 import 'package:subtrack_pro/core/services/format_service.dart';
 import 'package:subtrack_pro/features/auth/auth_screen.dart';
-import 'package:subtrack_pro/features/home/home_screen.dart';
-import '../../core/theme/app_theme.dart';
+
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/app_toggle_row.dart';
 import '../../shared/widgets/app_widgets.dart';
 
@@ -49,7 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Dark Mode',
                 subtitle: 'Switch to dark theme',
                 value: _darkMode,
-                onChanged: (v) => setState(() => _darkMode = v), context: context,
+                onChanged: (v) => setState(() => _darkMode = v),
               ),
             ]),
             const SizedBox(height: 16),
@@ -62,6 +62,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Currency',
                 subtitle: _currency,
                 onTap: () => _showCurrencyPicker(),
+              ),
+              Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
+               SettingsTile(
+                icon: Icons.account_balance_wallet_outlined,
+                title: 'Monthly Budget',
+                subtitle: '\$${AppController.to.monthlyBudget.value.toStringAsFixed(0)}',
+                onTap: () => _showBudgetPicker(),
               ),
               Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
               SettingsTile(
@@ -281,6 +288,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+
+  void _showBudgetPicker() {
+    final controller = TextEditingController(text: AppController.to.monthlyBudget.value.toStringAsFixed(0));
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                borderRadius: BorderRadius.circular(AppRadius.xl),
+                border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SheetHandle(),
+                    const SizedBox(height: 8),
+                    Text('Set Monthly Budget',
+                        style: Theme.of(context).textTheme.headlineSmall),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      controller: controller,
+                      label: 'Budget Amount',
+                      hint: 'Enter your monthly limit',
+                      keyboardType: TextInputType.number,
+                      prefixIcon: Icons.attach_money_rounded,
+                      autofocus: true,
+                    ),
+                    const SizedBox(height: 24),
+                    AppButton(
+                      label: 'Save Budget',
+                      onTap: () {
+                        final amount = double.tryParse(controller.text) ?? 0.0;
+                        AppController.to.updateMonthlyBudget(amount);
+                        Navigator.pop(context);
+                        if (mounted) setState(() {});
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _ProfileCard extends StatelessWidget {
@@ -291,7 +355,6 @@ class _ProfileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final userData = AppController.to.userData.value;
     final isPremium = AppController.to.isPremium.value;
-    final theme = Theme.of(context);
     return GestureDetector(
       onTap: (){
         if(userData==null){

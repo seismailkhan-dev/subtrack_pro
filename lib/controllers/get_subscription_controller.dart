@@ -85,4 +85,15 @@ class GetSubscriptionsController extends GetxController{
       rethrow;
     }
   }
+
+  Future<void> updateLastUsedDate(SubscriptionDataModel sub) async {
+    try {
+      final updatedSub = sub.copyWith(lastUsedDate: DateTime.now(), updatedAt: DateTime.now());
+      await _service.updateSubscription(updatedSub);
+      await fetchSubscriptions();
+      print('Last used date updated for ${sub.name}');
+    } catch (e) {
+      print('Error updating last used date: $e');
+    }
+  }
 }
