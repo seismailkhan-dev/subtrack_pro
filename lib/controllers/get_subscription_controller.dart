@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'analytics_controller.dart';
 
 import '../core/services/drift_service.dart';
 import '../data/models/subcription_model.dart';
@@ -19,9 +20,14 @@ class GetSubscriptionsController extends GetxController{
   RxDouble totalYearlySpend = 0.0.obs;
   RxInt totalActiveSubs = 0.obs;
 
+  final RxList<SubscriptionDataModel> allSubscriptions = <SubscriptionDataModel>[].obs;
 
+  @override
+  void onInit() {
+    super.onInit();
+    allSubscriptions.bindStream(watchSubscriptions());
+  }
   Future<void> fetchSubscriptions({int limit = 5}) async {
-
     isFetchingHomeSub(true);
     try{
       final subs = await _service.getSubscriptions();
@@ -53,7 +59,30 @@ class GetSubscriptionsController extends GetxController{
   }
 
   Future<void> deleteSubscription(int id) async {
-    await NotificationService().cancelNotification(id);
-    return _service.deleteSubscription(id);
+    print('Deleting subscription with id: $id');
+    try {
+      // Optimistic UI update
+      allSubscriptions.removeWhere((s) => s.id == id);
+      homeSubListModel.removeWhere((s) => s.id == id);
+      upcomingSubListModel.removeWhere((s) => s.id == id);
+
+      await NotificationService().cancelNotification(id);
+      await _service.deleteSubscription(id);
+      
+      // We don't necessarily need to call fetchSubscriptions() here 
+      // because bindStream handles allSubscriptions and we've manually 
+      // updated homeSubListModel/upcomingSubListModel.
+      // But fetchSubscriptions updates counts and totals, so we should call it.
+      await fetchSubscriptions();
+
+      if (Get.isRegistered<AnalyticsController>()) {
+        await AnalyticsController.to.fetchAnalyticsData();
+      }
+      print('Subscription deleted successfully');
+    } catch (e) {
+      print('Error deleting subscription: $e');
+      fetchSubscriptions(); // Revert on error
+      rethrow;
+    }
   }
 }

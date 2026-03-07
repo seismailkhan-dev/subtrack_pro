@@ -106,6 +106,28 @@ class NotificationService {
               ? DateTimeComponents.dateAndTime
               : DateTimeComponents.dayOfWeekAndTime),
     );
+
+    // Trial Expiration Notification (1 day before)
+    if (subscription.freeTrial) {
+      final trialExpiryTrigger = subscription.nextBillingDate.subtract(const Duration(days: 1));
+      
+      // Only schedule if it's in the future
+      if (trialExpiryTrigger.isAfter(DateTime.now())) {
+        final tz.TZDateTime trialScheduledDate = tz.TZDateTime.from(trialExpiryTrigger, tz.local);
+        
+        final trialTitle = 'Trial Ending: ${subscription.name}';
+        final trialBody = 'Your free trial for ${subscription.name} ends tomorrow. A charge of \$${subscription.price.toStringAsFixed(2)} will be applied on ${subscription.nextBillingDate.month}/${subscription.nextBillingDate.day}.';
+
+        await _flutterLocalNotificationsPlugin.zonedSchedule(
+          id: subscription.id! + 20000, // Unique ID for trial reminder
+          title: trialTitle,
+          body: trialBody,
+          scheduledDate: trialScheduledDate,
+          notificationDetails: platformChannelSpecifics,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        );
+      }
+    }
   }
 
   Future<void> cancelNotification(int id) async {

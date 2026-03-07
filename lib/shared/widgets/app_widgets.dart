@@ -264,25 +264,54 @@ class SubscriptionCard extends StatelessWidget {
           child: Row(
             children: [
               // Logo
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: brandColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Center(
-                  child: Text(
-                    subscription.name.isNotEmpty
-                        ? subscription.name.substring(0, 1).toUpperCase()
-                        : '?',
-                    style: TextStyle(
-                      color: brandColor,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: brandColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Center(
+                      child: Text(
+                        subscription.name.isNotEmpty
+                            ? subscription.name.substring(0, 1).toUpperCase()
+                            : '?',
+                        style: TextStyle(
+                          color: brandColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  if (subscription.isTrialActive)
+                    Positioned(
+                      top: -4,
+                      right: -4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: isDark ? AppColors.surfaceDark : Colors.white,
+                            width: 1,
+                          ),
+                        ),
+                        child: const Text(
+                          'TRIAL',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 7,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(width: 14),
               // Info
@@ -297,7 +326,6 @@ class SubscriptionCard extends StatelessWidget {
                       children: [
                         _CategoryChip(
                           label: subscription.category,
-                          // color: subscription.categoryColor,
                           color: categoryColor,
                         ),
                         const SizedBox(width: 6),
@@ -321,7 +349,7 @@ class SubscriptionCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  _DaysBadge(days: days),
+                  _DaysBadge(days: days, isTrial: subscription.isTrialActive),
                 ],
               ),
             ],
@@ -360,7 +388,8 @@ class _CategoryChip extends StatelessWidget {
 
 class _DaysBadge extends StatelessWidget {
   final int days;
-  const _DaysBadge({required this.days});
+  final bool isTrial;
+  const _DaysBadge({required this.days, this.isTrial = false});
 
   @override
   Widget build(BuildContext context) {
@@ -368,19 +397,19 @@ class _DaysBadge extends StatelessWidget {
     String label;
     if (days < 0) {
       color = AppColors.danger;
-      label = 'Overdue by ${days.abs()}d';
+      label = isTrial ? 'Trial expired ${days.abs()}d ago' : 'Overdue by ${days.abs()}d';
     } else if (days == 0) {
       color = AppColors.danger;
-      label = 'Today';
+      label = isTrial ? 'Trial ends today' : 'Today';
     } else if (days == 1) {
       color = AppColors.danger;
-      label = 'Tomorrow';
+      label = isTrial ? 'Trial ends tomorrow' : 'Tomorrow';
     } else if (days <= 3) {
       color = AppColors.warning;
-      label = 'in $days days';
+      label = isTrial ? 'Trial ends in $days days' : 'in $days days';
     } else {
       color = AppColors.accent;
-      label = 'in $days days';
+      label = isTrial ? 'Trial ends in $days days' : 'in $days days';
     }
 
     return Container(

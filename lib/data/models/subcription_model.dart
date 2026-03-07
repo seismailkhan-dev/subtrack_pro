@@ -45,6 +45,13 @@ class SubscriptionDataModel {
   Color get brandColorAsColor => Color(brandColor);
   Color get categoryColorAsColor => Color(categoryColor);
 
+  bool get isTrialActive {
+    if (!freeTrial) return false;
+    final now = DateTime.now();
+    // Trial is active if it hasn't reached the next billing date yet
+    return now.isBefore(nextBillingDate);
+  }
+
   double get monthlyEquivalent {
     if (billingCycle == 'weekly') return price * 4.3333;
     if (billingCycle == 'yearly') return price / 12;

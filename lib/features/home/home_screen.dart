@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
+import 'package:subtrack_pro/core/services/format_service.dart';
 import 'package:subtrack_pro/data/models/subcription_model.dart';
 import 'package:subtrack_pro/features/subscription_detail/subscription_detail_screen.dart';
 import 'package:subtrack_pro/shared/widgets/custom_loader.dart';
+import '../../controllers/analytics_controller.dart';
 import '../../controllers/get_subscription_controller.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/utils/app_router.dart';
 import '../../shared/widgets/app_widgets.dart';
 import '../all_subscription/all_subscriptions_screen.dart';
@@ -24,16 +24,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   final getSubController = Get.put(GetSubscriptionsController());
-
+  final analyticsController = Get.put(AnalyticsController());
 
   @override
   void initState() {
     super.initState();
     getSubController.fetchSubscriptions();
+    analyticsController.fetchAnalyticsData();
   }
-
 
   int _tabIndex = 0;
 
@@ -54,9 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
           currentIndex: _tabIndex,
           onTap: (i) => setState(() => _tabIndex = i),
         ),
-        floatingActionButton: _tabIndex == 0
-            ? _fab()
-            : null,
+        floatingActionButton: _tabIndex == 0 ? _fab() : null,
       );
     }
     return Scaffold(
@@ -67,8 +64,26 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {});
         }),
         onSubTap: (sub) =>
-            Get.to((SubscriptionDetailScreen(subscription: sub,))),
-        onSubDelete: (sub) {},
+            Get.to((SubscriptionDetailScreen(subscription: sub))),
+        onSubDelete: (sub) async {
+          if (sub.id != null) {
+            // Optimistic UI update
+            getSubController.homeSubListModel.removeWhere((s) => s.id == sub.id);
+            getSubController.upcomingSubListModel.removeWhere((s) => s.id == sub.id);
+            
+            try {
+              await getSubController.deleteSubscription(sub.id!);
+            } catch (e) {
+              // Revert on error
+              getSubController.fetchSubscriptions();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Failed to delete subscription')),
+                );
+              }
+            }
+          }
+        },
       ),
       floatingActionButton: _fab(),
       bottomNavigationBar: AppBottomNavBar(
@@ -80,8 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _fab() {
     return FloatingActionButton(
-      onPressed: () =>
-          Navigator.pushNamed(context, AppRoutes.addSubscription),
+      onPressed: () => Navigator.pushNamed(context, AppRoutes.addSubscription),
       child: const Icon(Icons.add_rounded, size: 28),
     );
   }
@@ -100,7 +114,6 @@ class _HomeDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final getSubController = Get.find<GetSubscriptionsController>();
 
     final theme = Theme.of(context);
@@ -175,8 +188,7 @@ class _HomeDashboard extends StatelessWidget {
                       SectionHeader(
                         title: 'Upcoming Renewals',
                         action: '',
-                        onAction: () {
-                        },
+                        onAction: () {},
                       ),
                       const SizedBox(height: 14),
                       ListView.builder(
@@ -185,7 +197,8 @@ class _HomeDashboard extends StatelessWidget {
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: getSubController.upcomingSubListModel.length,
                         itemBuilder: (ctx, index) {
-                          final sub = getSubController.upcomingSubListModel[index];
+                          final sub =
+                              getSubController.upcomingSubListModel[index];
                           return SubscriptionCard(
                             subscription: sub,
                             onTap: () => onSubTap(sub),
@@ -205,7 +218,7 @@ class _HomeDashboard extends StatelessWidget {
                 title: 'Recent Subscriptions',
                 action: 'View All',
                 onAction: () {
-                  Get.to(()=>AllSubscriptionsScreen());
+                  Get.to(() => AllSubscriptionsScreen());
                 },
               ),
               const SizedBox(height: 14),
@@ -224,8 +237,10 @@ class _HomeDashboard extends StatelessWidget {
                     itemBuilder: (BuildContext ctx, index) {
                       return SubscriptionCard(
                         subscription: getSubController.homeSubListModel[index],
-                        onTap: () => onSubTap(getSubController.homeSubListModel[index]),
-                        onDelete: () => onSubDelete(getSubController.homeSubListModel[index]),
+                        onTap: () => onSubTap(
+                            getSubController.homeSubListModel[index]),
+                        onDelete: () => onSubDelete(
+                            getSubController.homeSubListModel[index]),
                       );
                     },
                   );
@@ -268,7 +283,6 @@ class _SpendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final subsController = GetSubscriptionsController.to;
 
     return Obx(() {
@@ -357,7 +371,9 @@ class _MiniStat extends StatelessWidget {
         const SizedBox(height: 2),
         Text(value,
             style: const TextStyle(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700)),
       ],
     );
   }
@@ -367,23 +383,32 @@ class _TrendBadge extends StatelessWidget {
   const _TrendBadge();
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: AppColors.danger.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(AppRadius.full),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.trending_up_rounded, color: AppColors.danger, size: 14),
-          SizedBox(width: 4),
-          Text('+12%',
-              style: TextStyle(
-                  color: AppColors.danger, fontSize: 11, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
+    final controller = Get.find<AnalyticsController>();
+    return Obx(() {
+      final trend = controller.spendingTrend.value;
+      final isUp = trend > 0;
+      final color = isUp ? AppColors.danger : AppColors.accent;
+      final text = '${isUp ? '+' : ''}${trend.toStringAsFixed(1)}%';
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(AppRadius.full),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(isUp ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                color: color, size: 14),
+            const SizedBox(width: 4),
+            Text(text,
+                style: TextStyle(
+                    color: color, fontSize: 11, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -391,83 +416,89 @@ class _LineChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final spots = [
-      const FlSpot(0, 98),
-      const FlSpot(1, 112),
-      const FlSpot(2, 105),
-      const FlSpot(3, 125),
-      const FlSpot(4, 118),
-      const FlSpot(5, 126),
-    ];
-    return LineChart(
-      LineChartData(
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: 20,
-          getDrawingHorizontalLine: (_) => FlLine(
-            color: isDark
-                ? AppColors.borderDark
-                : AppColors.borderLight,
-            strokeWidth: 1,
-          ),
-        ),
-        titlesData: FlTitlesData(
-          leftTitles: const AxisTitles(),
-          rightTitles: const AxisTitles(),
-          topTitles: const AxisTitles(),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (v, _) {
-                const months = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'];
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(months[v.toInt()],
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.textTertiaryLight)),
-                );
-              },
+    final controller = Get.find<AnalyticsController>();
+
+    return Obx(() {
+      final spots = controller.monthlySpendingSpots;
+      if (spots.isEmpty) return const Center(child: Text('No data'));
+
+      double maxY = spots.fold(0.0, (max, spot) => spot.y > max ? spot.y : max);
+      maxY = maxY == 0 ? 100 : maxY * 1.2;
+
+      return LineChart(
+        LineChartData(
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: maxY / 5,
+            getDrawingHorizontalLine: (_) => FlLine(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              strokeWidth: 1,
             ),
           ),
-        ),
-        borderData: FlBorderData(show: false),
-        lineBarsData: [
-          LineChartBarData(
-            spots: spots,
-            isCurved: true,
-            color: AppColors.primary,
-            barWidth: 2.5,
-            dotData: FlDotData(
-              show: true,
-              checkToShowDot: (spot, _) =>
-                  spot.x == spots.last.x,
-              getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
-                radius: 5,
-                color: AppColors.primary,
-                strokeColor: Colors.white,
-                strokeWidth: 2,
-              ),
-            ),
-            belowBarData: BarAreaData(
-              show: true,
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary.withOpacity(0.2),
-                  AppColors.primary.withOpacity(0.0),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+          titlesData: FlTitlesData(
+            leftTitles: const AxisTitles(),
+            rightTitles: const AxisTitles(),
+            topTitles: const AxisTitles(),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (v, _) {
+                  final now = DateTime.now();
+                  final months = List.generate(6, (i) {
+                    final date = DateTime(now.year, now.month - (5 - i), 1);
+                    return FormatService.formatMMMM(date).substring(0, 3);
+                  });
+                  if (v.toInt() < 0 || v.toInt() >= months.length) {
+                    return const SizedBox();
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(months[v.toInt()],
+                        style: const TextStyle(
+                            fontSize: 10, color: AppColors.textTertiaryLight)),
+                  );
+                },
               ),
             ),
           ),
-        ],
-        minX: 0,
-        maxX: 5,
-        minY: 80,
-        maxY: 140,
-      ),
-    );
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            LineChartBarData(
+              spots: spots,
+              isCurved: true,
+              color: AppColors.primary,
+              barWidth: 2.5,
+              dotData: FlDotData(
+                show: true,
+                checkToShowDot: (spot, _) => spot.x == spots.last.x,
+                getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
+                  radius: 4,
+                  color: AppColors.primary,
+                  strokeColor: Colors.white,
+                  strokeWidth: 2,
+                ),
+              ),
+              belowBarData: BarAreaData(
+                show: true,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.2),
+                    AppColors.primary.withOpacity(0.0),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ],
+          minX: 0,
+          maxX: 5,
+          minY: 0,
+          maxY: maxY,
+        ),
+      );
+    });
   }
 }
 
@@ -475,44 +506,38 @@ class _DonutChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sections = [
-      PieChartSectionData(
-          value: 30, color: AppColors.catEntertainment, title: 'Ent', radius: 40, titleStyle: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600)),
-      PieChartSectionData(
-          value: 15, color: AppColors.catMusic, title: 'Music', radius: 40, titleStyle: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600)),
-      PieChartSectionData(
-          value: 25, color: AppColors.catHealth, title: 'Health', radius: 40, titleStyle: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600)),
-      PieChartSectionData(
-          value: 20, color: AppColors.catProductivity, title: 'Prod', radius: 40, titleStyle: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600)),
-      PieChartSectionData(
-          value: 10, color: AppColors.catStorage, title: 'Other', radius: 40, titleStyle: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600)),
-    ];
-    return Row(
-      children: [
-        SizedBox(
-          width: 140,
-          child: PieChart(PieChartData(sections: sections, centerSpaceRadius: 36, sectionsSpace: 2)),
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _LegendRow(color: AppColors.catEntertainment, label: 'Entertainment', pct: '30%'),
-              const SizedBox(height: 8),
-              _LegendRow(color: AppColors.catMusic, label: 'Music', pct: '15%'),
-              const SizedBox(height: 8),
-              _LegendRow(color: AppColors.catHealth, label: 'Health', pct: '25%'),
-              const SizedBox(height: 8),
-              _LegendRow(color: AppColors.catProductivity, label: 'Productivity', pct: '20%'),
-              const SizedBox(height: 8),
-              _LegendRow(color: AppColors.catStorage, label: 'Other', pct: '10%'),
-            ],
+    final controller = Get.find<AnalyticsController>();
+
+    return Obx(() {
+      final sections = controller.getCategorySections(true); // true for small
+      final legend = controller.getCategoryLegend();
+
+      if (sections.isEmpty) return const Center(child: Text('No data'));
+
+      return Row(
+        children: [
+          SizedBox(
+            width: 140,
+            child: PieChart(
+                PieChartData(
+                    sections: sections, centerSpaceRadius: 36, sectionsSpace: 2)),
           ),
-        ),
-      ],
-    );
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: legend
+                  .map((l) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _LegendRow(color: l.$2, label: l.$1, pct: l.$3),
+                      ))
+                  .toList(),
+            ),
+          ),
+        ],
+      );
+    });
   }
 }
 
@@ -520,17 +545,24 @@ class _LegendRow extends StatelessWidget {
   final Color color;
   final String label;
   final String pct;
-  const _LegendRow({required this.color, required this.label, required this.pct});
+  const _LegendRow(
+      {required this.color, required this.label, required this.pct});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Row(
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
+        Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+                color: color, borderRadius: BorderRadius.circular(2))),
         const SizedBox(width: 8),
         Expanded(child: Text(label, style: theme.textTheme.labelMedium)),
-        Text(pct, style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600)),
+        Text(pct,
+            style: theme.textTheme.labelMedium
+                ?.copyWith(fontWeight: FontWeight.w600)),
       ],
     );
   }
