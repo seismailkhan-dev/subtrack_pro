@@ -50,11 +50,39 @@ class AppDatabase extends _$AppDatabase {
                 subscriptionsTable, subscriptionsTable.categoryColor);
           }
           if (from < 3) {
-            await m.addColumn(usersTable, usersTable.monthlyBudget);
-            await m.addColumn(subscriptionsTable, subscriptionsTable.lastUsedDate);
+            // Use raw SQL with existence checks to avoid "duplicate column" crashes
+            // on devices where these columns may already exist from a prior run.
+            await _addColumnIfNotExists(
+              'users_table',
+              'monthly_budget',
+              'REAL NOT NULL DEFAULT 0.0',
+            );
+            await _addColumnIfNotExists(
+              'subscriptions_table',
+              'last_used_date',
+              'INTEGER',
+            );
           }
         },
       );
+
+  /// Adds a column to [tableName] only if it doesn't already exist.
+  /// This makes migrations idempotent, preventing "duplicate column" crashes.
+  Future<void> _addColumnIfNotExists(
+    String tableName,
+    String columnName,
+    String columnDef,
+  ) async {
+    final result = await customSelect(
+      "SELECT COUNT(*) as cnt FROM pragma_table_info('$tableName') WHERE name = '$columnName'",
+    ).getSingle();
+    final count = result.read<int>('cnt');
+    if (count == 0) {
+      await customStatement(
+        'ALTER TABLE "$tableName" ADD COLUMN "$columnName" $columnDef;',
+      );
+    }
+  }
 
   Future<void> upsertUser(UsersTableCompanion user) =>
       into(usersTable).insertOnConflictUpdate(user);

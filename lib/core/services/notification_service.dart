@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:subtrack_pro/core/services/sharedpref_service.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:subtrack_pro/data/models/subcription_model.dart';
@@ -27,15 +28,16 @@ class NotificationService {
     // iOS Initialization
     const DarwinInitializationSettings initializationSettingsDarwin =
         DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-    );
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsDarwin,
+        );
 
     await _flutterLocalNotificationsPlugin.initialize(
       settings: initializationSettings,
@@ -49,38 +51,48 @@ class NotificationService {
 
   Future<void> requestPermissions() async {
     if (kIsWeb) return;
-    
+
     // Request Android 13+ permission
     if (Platform.isAndroid) {
       final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-          _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+          _flutterLocalNotificationsPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >();
 
       await androidImplementation?.requestNotificationsPermission();
     }
   }
 
   Future<void> scheduleNotification(SubscriptionDataModel subscription) async {
+    // Check if notifications are enabled globally
+    if (!SharedPrefService.getIsNotificationsEnabled()) return;
+
     if (subscription.id == null) return;
-    
+
     // Calculate trigger date
-    final triggerDate = subscription.nextBillingDate
-        .subtract(Duration(days: subscription.reminderDays));
+    final triggerDate = subscription.nextBillingDate.subtract(
+      Duration(days: subscription.reminderDays),
+    );
 
     // If trigger date has already passed, we don't alert retroactively
     if (triggerDate.isBefore(DateTime.now())) return;
 
-    final tz.TZDateTime scheduledDate = tz.TZDateTime.from(triggerDate, tz.local);
+    final tz.TZDateTime scheduledDate = tz.TZDateTime.from(
+      triggerDate,
+      tz.local,
+    );
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      'subscription_reminders', // channel id
-      'Subscription Reminders', // channel name
-      channelDescription: 'Notifications for upcoming subscription renewals',
-      importance: Importance.max,
-      priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
-    );
+          'subscription_reminders', // channel id
+          'Subscription Reminders', // channel name
+          channelDescription:
+              'Notifications for upcoming subscription renewals',
+          importance: Importance.max,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        );
     const DarwinNotificationDetails darwinPlatformChannelSpecifics =
         DarwinNotificationDetails();
 
@@ -100,23 +112,30 @@ class NotificationService {
       scheduledDate: scheduledDate,
       notificationDetails: platformChannelSpecifics,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      matchDateTimeComponents: subscription.billingCycle.toLowerCase() == 'monthly'
+      matchDateTimeComponents:
+          subscription.billingCycle.toLowerCase() == 'monthly'
           ? DateTimeComponents.dayOfMonthAndTime
           : (subscription.billingCycle.toLowerCase() == 'yearly'
-              ? DateTimeComponents.dateAndTime
-              : DateTimeComponents.dayOfWeekAndTime),
+                ? DateTimeComponents.dateAndTime
+                : DateTimeComponents.dayOfWeekAndTime),
     );
 
     // Trial Expiration Notification (1 day before)
     if (subscription.freeTrial) {
-      final trialExpiryTrigger = subscription.nextBillingDate.subtract(const Duration(days: 1));
-      
+      final trialExpiryTrigger = subscription.nextBillingDate.subtract(
+        const Duration(days: 1),
+      );
+
       // Only schedule if it's in the future
       if (trialExpiryTrigger.isAfter(DateTime.now())) {
-        final tz.TZDateTime trialScheduledDate = tz.TZDateTime.from(trialExpiryTrigger, tz.local);
-        
+        final tz.TZDateTime trialScheduledDate = tz.TZDateTime.from(
+          trialExpiryTrigger,
+          tz.local,
+        );
+
         final trialTitle = 'Trial Ending: ${subscription.name}';
-        final trialBody = 'Your free trial for ${subscription.name} ends tomorrow. A charge of \$${subscription.price.toStringAsFixed(2)} will be applied on ${subscription.nextBillingDate.month}/${subscription.nextBillingDate.day}.';
+        final trialBody =
+            'Your free trial for ${subscription.name} ends tomorrow. A charge of \$${subscription.price.toStringAsFixed(2)} will be applied on ${subscription.nextBillingDate.month}/${subscription.nextBillingDate.day}.';
 
         await _flutterLocalNotificationsPlugin.zonedSchedule(
           id: subscription.id! + 20000, // Unique ID for trial reminder
@@ -134,24 +153,33 @@ class NotificationService {
     await _flutterLocalNotificationsPlugin.cancel(id: id);
   }
 
+  Future<void> cancelAllNotifications() async {
+    await _flutterLocalNotificationsPlugin.cancelAll();
+  }
+
   // TEST FUNCTION: Schedule notification 10 minutes from now
-  Future<void> testScheduleNotification(SubscriptionDataModel subscription) async {
+  Future<void> testScheduleNotification(
+    SubscriptionDataModel subscription,
+  ) async {
     if (subscription.id == null) return;
-    
+
     // Test: exactly 10 minutes from now
     final triggerDate = DateTime.now().add(const Duration(minutes: 1));
 
-    final tz.TZDateTime scheduledDate = tz.TZDateTime.from(triggerDate, tz.local);
+    final tz.TZDateTime scheduledDate = tz.TZDateTime.from(
+      triggerDate,
+      tz.local,
+    );
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      'subscription_reminders_test', // channel id
-      'Subscription Reminders Test', // channel name
-      channelDescription: 'Test notifications',
-      importance: Importance.max,
-      priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
-    );
+          'subscription_reminders_test', // channel id
+          'Subscription Reminders Test', // channel name
+          channelDescription: 'Test notifications',
+          importance: Importance.max,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        );
     const DarwinNotificationDetails darwinPlatformChannelSpecifics =
         DarwinNotificationDetails();
 

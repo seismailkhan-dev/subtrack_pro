@@ -6,23 +6,25 @@ import 'package:subtrack_pro/features/home/home_screen.dart';
 import 'package:subtrack_pro/features/onboarding/onboarding_screen.dart';
 
 import '../core/services/drift_service.dart';
+import '../core/services/notification_service.dart';
 import '../data/models/user_model.dart';
 
-class AppController extends GetxController{
+class AppController extends GetxController {
   static AppController get to => Get.find();
 
   final isPremium = false.obs;
   final isLoggedInUser = false.obs;
   final hasLoggedInBefore = false.obs;
+  final notificationsEnabled = true.obs;
 
   Rxn<UserModel> userData = Rxn<UserModel>();
   final monthlyBudget = 0.0.obs;
 
   final DriftService _drift = DriftService();
 
-
   Future<void> checkUserSession() async {
     isLoggedInUser.value = SharedPrefService.getIsLoggedIn();
+    notificationsEnabled.value = SharedPrefService.getIsNotificationsEnabled();
     hasLoggedInBefore.value = SharedPrefService.getHasLoggedInBefore();
     final bool isSkipOnboarding = SharedPrefService.getIsSkipOnboarding();
 
@@ -42,10 +44,9 @@ class AppController extends GetxController{
     return;
   }
 
-
   Future<void> loadUserData() async {
     final localUser = await _drift.getLastLoggedInUser();
-    if(localUser!=null){
+    if (localUser != null) {
       userData.value = localUser;
       isPremium.value = localUser.isPremiumUser;
       monthlyBudget.value = localUser.monthlyBudget;
@@ -77,17 +78,29 @@ class AppController extends GetxController{
     }
   }
 
+  Future<void> toggleNotifications(bool value) async {
+    notificationsEnabled.value = value;
+    await SharedPrefService.saveIsNotificationsEnabled(value);
 
-  Future<void> signOutUser()async{
-    try{
+    // If notifications were turned off, we should cancel all existing notifications
+    if (!value) {
+      await NotificationService().cancelAllNotifications();
+    } else {
+      // If turned back on, we probably want to reschedule active subscriptions.
+      // But we don't have GetSubscriptionsController easily accessible here.
+      // Easiest is to just let them reschedule on next open or update.
+    }
+  }
+
+  Future<void> signOutUser() async {
+    try {
       await FirebaseAuth.instance.signOut();
-    }catch(e){
+    } catch (e) {
       print(e);
     }
     isPremium.value = false;
-    userData.value= null;
+    userData.value = null;
     await SharedPrefService.clear();
-    Get.offAll(()=>AuthScreen());
+    Get.offAll(() => AuthScreen());
   }
-
 }

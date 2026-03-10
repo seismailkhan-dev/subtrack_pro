@@ -43,141 +43,209 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // Appearance
             _SectionLabel(label: 'Appearance'),
-            _SettingsGroup(isDark: isDark, children: [
-              AppToggleRow(
-                icon: Icons.dark_mode_outlined,
-                title: 'Dark Mode',
-                subtitle: 'Switch to dark theme',
-                value: _darkMode,
-                onChanged: (v) => setState(() => _darkMode = v),
-              ),
-            ]),
+            _SettingsGroup(
+              isDark: isDark,
+              children: [
+                AppToggleRow(
+                  icon: Icons.dark_mode_outlined,
+                  title: 'Dark Mode',
+                  subtitle: 'Switch to dark theme',
+                  value: _darkMode,
+                  onChanged: (v) => setState(() => _darkMode = v),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
 
             // General
             _SectionLabel(label: 'General'),
-            _SettingsGroup(isDark: isDark, children: [
-              SettingsTile(
-                icon: Icons.language_rounded,
-                title: 'Currency',
-                subtitle: _currency,
-                onTap: () => _showCurrencyPicker(),
-              ),
-              Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
-               SettingsTile(
-                icon: Icons.account_balance_wallet_outlined,
-                title: 'Monthly Budget',
-                subtitle: '\$${AppController.to.monthlyBudget.value.toStringAsFixed(0)}',
-                onTap: () => _showBudgetPicker(),
-              ),
-              Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
-              SettingsTile(
-                icon: Icons.notifications_outlined,
-                title: 'Notifications',
-                trailing: Switch(
-                  value: _notifications,
-                  onChanged: (v) => setState(() => _notifications = v),
+            _SettingsGroup(
+              isDark: isDark,
+              children: [
+                SettingsTile(
+                  icon: Icons.language_rounded,
+                  title: 'Currency',
+                  subtitle: _currency,
+                  onTap: () => _showCurrencyPicker(),
                 ),
-              ),
-              Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
-              SettingsTile(
-                icon: Icons.fingerprint_rounded,
-                title: 'Biometric Lock',
-                trailing: Switch(
-                  value: _biometric,
-                  onChanged: (v) => setState(() => _biometric = v),
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? AppColors.dividerDark
+                      : AppColors.dividerLight,
                 ),
-              ),
-            ]),
+                Obx(
+                  () => SettingsTile(
+                    icon: Icons.account_balance_wallet_outlined,
+                    title: 'Monthly Budget',
+                    subtitle:
+                        '\$${AppController.to.monthlyBudget.value.toStringAsFixed(0)}',
+                    onTap: () => _showBudgetPicker(),
+                  ),
+                ),
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? AppColors.dividerDark
+                      : AppColors.dividerLight,
+                ),
+                Obx(
+                  () => SettingsTile(
+                    icon: Icons.notifications_outlined,
+                    title: 'Notifications',
+                    trailing: Switch(
+                      value: AppController.to.notificationsEnabled.value,
+                      onChanged: (v) => AppController.to.toggleNotifications(v),
+                    ),
+                  ),
+                ),
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? AppColors.dividerDark
+                      : AppColors.dividerLight,
+                ),
+                SettingsTile(
+                  icon: Icons.fingerprint_rounded,
+                  title: 'Biometric Lock',
+                  trailing: Switch(
+                    value: _biometric,
+                    onChanged: (v) => setState(() => _biometric = v),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
 
             // Premium
             _SectionLabel(label: 'Premium'),
-            _SettingsGroup(isDark: isDark, children: [
-              SettingsTile(
-                icon: Icons.workspace_premium_rounded,
-                title: 'Upgrade to Pro',
-                subtitle: 'Unlock all features',
-                iconColor: AppColors.warning,
-                onTap: () => Navigator.pushNamed(context, '/premium'),
-              ),
-            ]),
+            _SettingsGroup(
+              isDark: isDark,
+              children: [
+                SettingsTile(
+                  icon: Icons.workspace_premium_rounded,
+                  title: 'Upgrade to Pro',
+                  subtitle: 'Unlock all features',
+                  iconColor: AppColors.warning,
+                  onTap: () => Navigator.pushNamed(context, '/premium'),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
 
             // Data
             _SectionLabel(label: 'Data'),
-            _SettingsGroup(isDark: isDark, children: [
-              SettingsTile(
-                icon: Icons.cloud_upload_outlined,
-                title: 'Backup to Cloud',
-                iconColor: AppColors.info,
-                onTap: () {},
-              ),
-              Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
-              SettingsTile(
-                icon: Icons.file_download_outlined,
-                title: 'Export to PDF',
-                iconColor: AppColors.accent,
-                onTap: () {},
-              ),
-              Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
-              SettingsTile(
-                icon: Icons.restore_rounded,
-                title: 'Restore Data',
-                onTap: () {},
-              ),
-            ]),
+            _SettingsGroup(
+              isDark: isDark,
+              children: [
+                SettingsTile(
+                  icon: Icons.cloud_upload_outlined,
+                  title: 'Backup to Cloud',
+                  iconColor: AppColors.info,
+                  onTap: () {},
+                ),
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? AppColors.dividerDark
+                      : AppColors.dividerLight,
+                ),
+                SettingsTile(
+                  icon: Icons.file_download_outlined,
+                  title: 'Export to PDF',
+                  iconColor: AppColors.accent,
+                  onTap: () {},
+                ),
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? AppColors.dividerDark
+                      : AppColors.dividerLight,
+                ),
+                SettingsTile(
+                  icon: Icons.restore_rounded,
+                  title: 'Restore Data',
+                  onTap: () {},
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
 
             // Support
             _SectionLabel(label: 'Support'),
-            _SettingsGroup(isDark: isDark, children: [
-              SettingsTile(
-                icon: Icons.help_outline_rounded,
-                title: 'Help & FAQ',
-                onTap: () {},
-              ),
-              Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
-              SettingsTile(
-                icon: Icons.privacy_tip_outlined,
-                title: 'Privacy Policy',
-                onTap: () {},
-              ),
-              Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
-              SettingsTile(
-                icon: Icons.description_outlined,
-                title: 'Terms of Service',
-                onTap: () {},
-              ),
-              Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
-              SettingsTile(
-                icon: Icons.star_outline_rounded,
-                title: 'Rate the App',
-                iconColor: AppColors.warning,
-                onTap: () {},
-              ),
-            ]),
+            _SettingsGroup(
+              isDark: isDark,
+              children: [
+                SettingsTile(
+                  icon: Icons.help_outline_rounded,
+                  title: 'Help & FAQ',
+                  onTap: () {},
+                ),
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? AppColors.dividerDark
+                      : AppColors.dividerLight,
+                ),
+                SettingsTile(
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Privacy Policy',
+                  onTap: () {},
+                ),
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? AppColors.dividerDark
+                      : AppColors.dividerLight,
+                ),
+                SettingsTile(
+                  icon: Icons.description_outlined,
+                  title: 'Terms of Service',
+                  onTap: () {},
+                ),
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? AppColors.dividerDark
+                      : AppColors.dividerLight,
+                ),
+                SettingsTile(
+                  icon: Icons.star_outline_rounded,
+                  title: 'Rate the App',
+                  iconColor: AppColors.warning,
+                  onTap: () {},
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
 
             // Danger Zone
             _SectionLabel(label: 'Account'),
-            _SettingsGroup(isDark: isDark, children: [
-              SettingsTile(
-                icon: Icons.logout_rounded,
-                title: 'Sign Out',
-                isDestructive: false,
-                iconColor: AppColors.textSecondaryLight,
-                onTap: () => AppController.to.signOutUser(),
-              ),
-              Divider(height: 1, color: isDark ? AppColors.dividerDark : AppColors.dividerLight),
-              SettingsTile(
-                icon: Icons.delete_forever_rounded,
-                title: 'Delete Account',
-                subtitle: 'This action is irreversible',
-                isDestructive: true,
-                onTap: () => _showDeleteDialog(),
-              ),
-            ]),
+            _SettingsGroup(
+              isDark: isDark,
+              children: [
+                SettingsTile(
+                  icon: Icons.logout_rounded,
+                  title: 'Sign Out',
+                  isDestructive: false,
+                  iconColor: AppColors.textSecondaryLight,
+                  onTap: () => AppController.to.signOutUser(),
+                ),
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? AppColors.dividerDark
+                      : AppColors.dividerLight,
+                ),
+                SettingsTile(
+                  icon: Icons.delete_forever_rounded,
+                  title: 'Delete Account',
+                  subtitle: 'This action is irreversible',
+                  isDestructive: true,
+                  onTap: () => _showDeleteDialog(),
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
 
             // App version
@@ -192,18 +260,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Center(
-                      child: Text('S',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900)),
+                      child: Text(
+                        'S',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text('SubTrack Pro', style: theme.textTheme.titleSmall),
                   const SizedBox(height: 4),
-                  Text('Version 1.0.0 (Build 1)',
-                      style: theme.textTheme.bodySmall),
+                  Text(
+                    'Version 1.0.0 (Build 1)',
+                    style: theme.textTheme.bodySmall,
+                  ),
                 ],
               ),
             ),
@@ -231,30 +304,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const SheetHandle(),
-              Text('Select Currency',
-                  style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                'Select Currency',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 16),
-              ...AppConstants.currencies.map((c) => GestureDetector(
-                    onTap: () {
-                      setState(() => _currency = c);
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
-                      child: Row(
-                        children: [
-                          Text(c,
-                              style:
-                                  Theme.of(context).textTheme.titleSmall),
-                          const Spacer(),
-                          if (_currency == c)
-                            const Icon(Icons.check_rounded,
-                                color: AppColors.primary, size: 18),
-                        ],
-                      ),
+              ...AppConstants.currencies.map(
+                (c) => GestureDetector(
+                  onTap: () {
+                    setState(() => _currency = c);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
                     ),
-                  )),
+                    child: Row(
+                      children: [
+                        Text(c, style: Theme.of(context).textTheme.titleSmall),
+                        const Spacer(),
+                        if (_currency == c)
+                          const Icon(
+                            Icons.check_rounded,
+                            color: AppColors.primary,
+                            size: 18,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         );
@@ -267,10 +347,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.xl)),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+        ),
         title: const Text('Delete Account?'),
         content: const Text(
-            'All your data will be permanently deleted. This cannot be undone.'),
+          'All your data will be permanently deleted. This cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -281,8 +363,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(context);
               Navigator.pushReplacementNamed(context, '/auth');
             },
-            child: const Text('Delete',
-                style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
       ),
@@ -290,7 +374,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showBudgetPicker() {
-    final controller = TextEditingController(text: AppController.to.monthlyBudget.value.toStringAsFixed(0));
+    final controller = TextEditingController(
+      text: AppController.to.monthlyBudget.value.toStringAsFixed(0),
+    );
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -300,14 +386,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
             child: Container(
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
                 borderRadius: BorderRadius.circular(AppRadius.xl),
-                border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+                border: Border.all(
+                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                ),
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -315,8 +405,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     const SheetHandle(),
                     const SizedBox(height: 8),
-                    Text('Set Monthly Budget',
-                        style: Theme.of(context).textTheme.headlineSmall),
+                    Text(
+                      'Set Monthly Budget',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                     const SizedBox(height: 16),
                     AppTextField(
                       controller: controller,
@@ -356,10 +448,9 @@ class _ProfileCard extends StatelessWidget {
     final userData = AppController.to.userData.value;
     final isPremium = AppController.to.isPremium.value;
     return GestureDetector(
-      onTap: (){
-        if(userData==null){
-          Get.offAll(()=>AuthScreen());
-
+      onTap: () {
+        if (userData == null) {
+          Get.offAll(() => AuthScreen());
         }
       },
       child: Container(
@@ -371,7 +462,6 @@ class _ProfileCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-
             Container(
               width: 60,
               height: 60,
@@ -380,12 +470,17 @@ class _ProfileCard extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white.withOpacity(0.5)),
               ),
-              child:  Center(
-                child: Text(userData==null?'G':FormatService.getLogoName(userData.name),
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900)),
+              child: Center(
+                child: Text(
+                  userData == null
+                      ? 'G'
+                      : FormatService.getLogoName(userData.name),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -393,41 +488,59 @@ class _ProfileCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   Text(userData==null?'Guest User':userData.name,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700)),
-                  if(userData!=null)...[
-                    const Text('ismail@example.com',
-                        style: TextStyle(color: Colors.white70, fontSize: 13))
+                  Text(
+                    userData == null ? 'Guest User' : userData.name,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (userData != null) ...[
+                    const Text(
+                      'ismail@example.com',
+                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                    ),
                   ],
                   const SizedBox(height: 6),
 
-
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
-                    child:  Text(userData==null?'Login/Register':isPremium?'Premium User':'Free Plan',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600)),
+                    child: Text(
+                      userData == null
+                          ? 'Login/Register'
+                          : isPremium
+                          ? 'Premium User'
+                          : 'Free Plan',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
             IconButton(
-              icon:  Icon(userData==null?Icons.arrow_forward_ios:Icons.edit_outlined, color: Colors.white70, size: 20),
+              icon: Icon(
+                userData == null
+                    ? Icons.arrow_forward_ios
+                    : Icons.edit_outlined,
+                color: Colors.white70,
+                size: 20,
+              ),
               onPressed: () {
-
-                if(userData==null){
-                  Get.offAll(()=>AuthScreen());
-                }else{
+                if (userData == null) {
+                  Get.offAll(() => AuthScreen());
+                } else {
                   // will navigate to profile edit
                 }
               },
@@ -473,7 +586,8 @@ class _SettingsGroup extends StatelessWidget {
         color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight),
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        ),
         boxShadow: isDark ? null : AppShadows.sm,
       ),
       child: Column(children: children),
