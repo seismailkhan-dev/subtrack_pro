@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:subtrack_pro/features/settings/help_faq_screen.dart';
+import 'package:subtrack_pro/core/services/pdf_export_service.dart';
+import 'package:subtrack_pro/controllers/get_subscription_controller.dart';
+import 'package:subtrack_pro/features/settings/privacy_policy_screen.dart';
+import 'package:subtrack_pro/features/settings/terms_conditions_screen.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:subtrack_pro/controllers/app_controller.dart';
-import 'package:subtrack_pro/core/services/format_service.dart';
 import 'package:subtrack_pro/features/auth/auth_screen.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/services/format_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/app_toggle_row.dart';
 import '../../shared/widgets/app_widgets.dart';
@@ -41,21 +47,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _ProfileCard(isDark: isDark),
             const SizedBox(height: 24),
 
-            // Appearance
-            _SectionLabel(label: 'Appearance'),
-            _SettingsGroup(
-              isDark: isDark,
-              children: [
-                AppToggleRow(
-                  icon: Icons.dark_mode_outlined,
-                  title: 'Dark Mode',
-                  subtitle: 'Switch to dark theme',
-                  value: _darkMode,
-                  onChanged: (v) => setState(() => _darkMode = v),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+            // // Appearance
+            // _SectionLabel(label: 'Appearance'),
+            // _SettingsGroup(
+            //   isDark: isDark,
+            //   children: [
+            //     AppToggleRow(
+            //       icon: Icons.dark_mode_outlined,
+            //       title: 'Dark Mode',
+            //       subtitle: 'Switch to dark theme',
+            //       value: _darkMode,
+            //       onChanged: (v) => setState(() => _darkMode = v),
+            //     ),
+            //   ],
+            // ),
+            // const SizedBox(height: 16),
 
             // General
             _SectionLabel(label: 'General'),
@@ -105,12 +111,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ? AppColors.dividerDark
                       : AppColors.dividerLight,
                 ),
-                SettingsTile(
-                  icon: Icons.fingerprint_rounded,
-                  title: 'Biometric Lock',
-                  trailing: Switch(
-                    value: _biometric,
-                    onChanged: (v) => setState(() => _biometric = v),
+                Obx(
+                  () => SettingsTile(
+                    icon: Icons.fingerprint_rounded,
+                    title: 'Biometric Lock',
+                    trailing: Switch(
+                      value: AppController.to.biometricEnabled.value,
+                      onChanged: (v) => AppController.to.toggleBiometric(v),
+                    ),
                   ),
                 ),
               ],
@@ -154,7 +162,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.file_download_outlined,
                   title: 'Export to PDF',
                   iconColor: AppColors.accent,
-                  onTap: () {},
+                  onTap: () {
+                    final subs = GetSubscriptionsController.to.allSubscriptions
+                        .toList();
+                    if (subs.isNotEmpty) {
+                      PdfExportService.exportSubscriptionsToPdf(subs);
+                    } else {
+                      Get.snackbar('Empty', 'No subscriptions to export');
+                    }
+                  },
                 ),
                 Divider(
                   height: 1,
@@ -179,7 +195,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 SettingsTile(
                   icon: Icons.help_outline_rounded,
                   title: 'Help & FAQ',
-                  onTap: () {},
+                  onTap: () => Get.to(() => const HelpFaqScreen()),
                 ),
                 Divider(
                   height: 1,
@@ -190,7 +206,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 SettingsTile(
                   icon: Icons.privacy_tip_outlined,
                   title: 'Privacy Policy',
-                  onTap: () {},
+                  onTap: () => Get.to(() => const PrivacyPolicyScreen()),
                 ),
                 Divider(
                   height: 1,
@@ -199,9 +215,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       : AppColors.dividerLight,
                 ),
                 SettingsTile(
-                  icon: Icons.description_outlined,
-                  title: 'Terms of Service',
-                  onTap: () {},
+                  icon: Icons.gavel_outlined,
+                  title: 'Terms & Conditions',
+                  onTap: () => Get.to(() => const TermsConditionsScreen()),
                 ),
                 Divider(
                   height: 1,
@@ -210,10 +226,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       : AppColors.dividerLight,
                 ),
                 SettingsTile(
-                  icon: Icons.star_outline_rounded,
+                  icon: Icons.star_border_rounded,
                   title: 'Rate the App',
-                  iconColor: AppColors.warning,
-                  onTap: () {},
+                  onTap: () async {
+                    final InAppReview inAppReview = InAppReview.instance;
+
+                    if (await inAppReview.isAvailable()) {
+                      inAppReview.requestReview();
+                    } else {
+                      inAppReview.openStoreListing();
+                    }
+                  },
                 ),
               ],
             ),

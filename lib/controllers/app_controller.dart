@@ -4,8 +4,10 @@ import 'package:subtrack_pro/core/services/sharedpref_service.dart';
 import 'package:subtrack_pro/features/auth/auth_screen.dart';
 import 'package:subtrack_pro/features/home/home_screen.dart';
 import 'package:subtrack_pro/features/onboarding/onboarding_screen.dart';
+import 'package:subtrack_pro/features/auth/lock_screen.dart';
 
 import '../core/services/drift_service.dart';
+import '../core/services/biometric_service.dart';
 import '../core/services/notification_service.dart';
 import '../data/models/user_model.dart';
 
@@ -16,6 +18,7 @@ class AppController extends GetxController {
   final isLoggedInUser = false.obs;
   final hasLoggedInBefore = false.obs;
   final notificationsEnabled = true.obs;
+  final biometricEnabled = false.obs;
 
   Rxn<UserModel> userData = Rxn<UserModel>();
   final monthlyBudget = 0.0.obs;
@@ -25,6 +28,7 @@ class AppController extends GetxController {
   Future<void> checkUserSession() async {
     isLoggedInUser.value = SharedPrefService.getIsLoggedIn();
     notificationsEnabled.value = SharedPrefService.getIsNotificationsEnabled();
+    biometricEnabled.value = SharedPrefService.getIsBiometricEnabled();
     hasLoggedInBefore.value = SharedPrefService.getHasLoggedInBefore();
     final bool isSkipOnboarding = SharedPrefService.getIsSkipOnboarding();
 
@@ -40,8 +44,12 @@ class AppController extends GetxController {
     // }
 
     await loadUserData();
-    Get.offAll(() => const HomeScreen());
-    return;
+    
+    if (biometricEnabled.value) {
+      Get.offAll(() => const LockScreen());
+    } else {
+      Get.offAll(() => const HomeScreen());
+    }
   }
 
   Future<void> loadUserData() async {
@@ -89,6 +97,31 @@ class AppController extends GetxController {
       // If turned back on, we probably want to reschedule active subscriptions.
       // But we don't have GetSubscriptionsController easily accessible here.
       // Easiest is to just let them reschedule on next open or update.
+    }
+  }
+
+  Future<void> toggleBiometric(bool value) async {
+    if (value) {
+      // Trying to enable it - prompt for authentication
+      final success = await BiometricService().authenticate();
+      if (success) {
+        biometricEnabled.value = true;
+        await SharedPrefService.saveIsBiometricEnabled(true);
+      } else {
+        // Auth failed or canceled, keep it disabled
+        biometricEnabled.value = false;
+        Get.snackbar('Authentication Failed', 'Could not enable biometric lock');
+      }
+    } else {
+      // Disabling it - we could prompt here too for security, but usually disabling is fine
+      // Or we can prompt again to verify it's the owner disabling it:
+      final success = await BiometricService().authenticate();
+      if (success) {
+        biometricEnabled.value = false;
+        await SharedPrefService.saveIsBiometricEnabled(false);
+      } else {
+        Get.snackbar('Authentication Failed', 'Could not disable biometric lock');
+      }
     }
   }
 

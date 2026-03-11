@@ -20,6 +20,7 @@ class SharedPrefService {
   static const String isSkipOnboarding = 'isSkipOnboarding';
   static const String isGuestUser = 'isGuestUser';
   static const String isNotificationsEnabled = 'isNotificationsEnabled';
+  static const String isBiometricEnabled = 'isBiometricEnabled';
 
   // ================= NOTIFICATIONS FLAG =================
   static Future<void> saveIsNotificationsEnabled(bool value) async {
@@ -28,6 +29,14 @@ class SharedPrefService {
 
   static bool getIsNotificationsEnabled() =>
       _prefs.getBool(isNotificationsEnabled) ?? true;
+
+  // ================= BIOMETRIC FLAG =================
+  static Future<void> saveIsBiometricEnabled(bool value) async {
+    await _prefs.setBool(isBiometricEnabled, value);
+  }
+
+  static bool getIsBiometricEnabled() =>
+      _prefs.getBool(isBiometricEnabled) ?? false;
 
   // ================= LOGIN FLAG =================
   static Future<void> saveIsLoggedIn(bool value) async {
