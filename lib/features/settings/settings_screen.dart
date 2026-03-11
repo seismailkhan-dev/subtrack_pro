@@ -33,6 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -44,7 +45,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Profile Card
-            _ProfileCard(isDark: isDark),
+            _ProfileCard(
+              isDark: isDark,
+              onLoginRequired: _showLoginRequiredDialog,
+            ),
             const SizedBox(height: 24),
 
             // // Appearance
@@ -135,7 +139,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'Upgrade to Pro',
                   subtitle: 'Unlock all features',
                   iconColor: AppColors.warning,
-                  onTap: () => Navigator.pushNamed(context, '/premium'),
+                  onTap: () {
+                    if (!AppController.to.isLoggedInUser.value) {
+                      _showLoginRequiredDialog();
+                      return;
+                    }
+                    Navigator.pushNamed(context, '/premium');
+                  },
                 ),
               ],
             ),
@@ -150,7 +160,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.cloud_upload_outlined,
                   title: 'Backup to Cloud',
                   iconColor: AppColors.info,
-                  onTap: () {},
+                  onTap: () {
+                    if (!AppController.to.isLoggedInUser.value) {
+                      _showLoginRequiredDialog();
+                      return;
+                    }
+                  },
                 ),
                 Divider(
                   height: 1,
@@ -163,6 +178,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'Export to PDF',
                   iconColor: AppColors.accent,
                   onTap: () {
+                    if (!AppController.to.isLoggedInUser.value) {
+                      _showLoginRequiredDialog();
+                      return;
+                    }
                     final subs = GetSubscriptionsController.to.allSubscriptions
                         .toList();
                     if (subs.isNotEmpty) {
@@ -181,7 +200,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 SettingsTile(
                   icon: Icons.restore_rounded,
                   title: 'Restore Data',
-                  onTap: () {},
+                  onTap: () {
+                    if (!AppController.to.isLoggedInUser.value) {
+                      _showLoginRequiredDialog();
+                      return;
+                    }
+                  },
                 ),
               ],
             ),
@@ -243,33 +267,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 16),
 
             // Danger Zone
-            _SectionLabel(label: 'Account'),
-            _SettingsGroup(
-              isDark: isDark,
-              children: [
-                SettingsTile(
-                  icon: Icons.logout_rounded,
-                  title: 'Sign Out',
-                  isDestructive: false,
-                  iconColor: AppColors.textSecondaryLight,
-                  onTap: () => AppController.to.signOutUser(),
-                ),
-                Divider(
-                  height: 1,
-                  color: isDark
-                      ? AppColors.dividerDark
-                      : AppColors.dividerLight,
-                ),
-                SettingsTile(
-                  icon: Icons.delete_forever_rounded,
-                  title: 'Delete Account',
-                  subtitle: 'This action is irreversible',
-                  isDestructive: true,
-                  onTap: () => _showDeleteDialog(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+            Obx(() {
+              if (!AppController.to.isLoggedInUser.value) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _SectionLabel(label: 'Account'),
+                  _SettingsGroup(
+                    isDark: isDark,
+                    children: [
+                      SettingsTile(
+                        icon: Icons.logout_rounded,
+                        title: 'Sign Out',
+                        isDestructive: false,
+                        iconColor: AppColors.textSecondaryLight,
+                        onTap: () => AppController.to.signOutUser(),
+                      ),
+                      Divider(
+                        height: 1,
+                        color: isDark
+                            ? AppColors.dividerDark
+                            : AppColors.dividerLight,
+                      ),
+                      SettingsTile(
+                        icon: Icons.delete_forever_rounded,
+                        title: 'Delete Account',
+                        subtitle: 'This action is irreversible',
+                        isDestructive: true,
+                        onTap: () => _showDeleteDialog(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              );
+            }),
 
             // App version
             Center(
@@ -306,6 +338,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 20),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showLoginRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+        ),
+        title: const Text('Coming Soon'),
+        content: const Text(
+          'This feature is coming in the upcoming version. Enjoy the offline version!',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
       ),
     );
   }
@@ -464,16 +517,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
 class _ProfileCard extends StatelessWidget {
   final bool isDark;
-  const _ProfileCard({required this.isDark});
+  final VoidCallback onLoginRequired;
+
+  const _ProfileCard({required this.isDark, required this.onLoginRequired});
 
   @override
   Widget build(BuildContext context) {
     final userData = AppController.to.userData.value;
     final isPremium = AppController.to.isPremium.value;
+    final isLoggedIn = AppController.to.isLoggedInUser.value;
     return GestureDetector(
       onTap: () {
-        if (userData == null) {
-          Get.offAll(() => AuthScreen());
+        if (!isLoggedIn) {
+          onLoginRequired();
         }
       },
       child: Container(
@@ -519,10 +575,10 @@ class _ProfileCard extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  if (userData != null) ...[
-                    const Text(
-                      'ismail@example.com',
-                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                  if (isLoggedIn) ...[
+                    Text(
+                      userData?.email ?? '',
+                      style: const TextStyle(color: Colors.white70, fontSize: 13),
                     ),
                   ],
                   const SizedBox(height: 6),
@@ -537,7 +593,7 @@ class _ProfileCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
                     child: Text(
-                      userData == null
+                      !isLoggedIn
                           ? 'Login/Register'
                           : isPremium
                           ? 'Premium User'
@@ -554,15 +610,15 @@ class _ProfileCard extends StatelessWidget {
             ),
             IconButton(
               icon: Icon(
-                userData == null
+                !isLoggedIn
                     ? Icons.arrow_forward_ios
                     : Icons.edit_outlined,
                 color: Colors.white70,
                 size: 20,
               ),
               onPressed: () {
-                if (userData == null) {
-                  Get.offAll(() => AuthScreen());
+                if (!isLoggedIn) {
+                  onLoginRequired();
                 } else {
                   // will navigate to profile edit
                 }

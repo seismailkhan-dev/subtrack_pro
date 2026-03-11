@@ -63,7 +63,12 @@ class SharedPrefService {
     await _prefs.setBool(isGuestUser, value);
   }
 
-  static bool getIsGuestUser() => _prefs.getBool(isGuestUser) ?? false;
+  static bool getIsGuestUser() {
+    if (_prefs.containsKey(isGuestUser)) {
+      return _prefs.getBool(isGuestUser)!;
+    }
+    return !getHasLoggedInBefore();
+  }
 
   // ================= LOGIN Time =================
   static Future<void> saveLoggedInTime() async {

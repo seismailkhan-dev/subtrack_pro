@@ -137,7 +137,7 @@ class _HomeDashboard extends StatelessWidget {
                         style: theme.textTheme.bodySmall,
                       ),
                       Text(
-                        'Ismail 👋',
+                        'Guest User 👋',
                         style: theme.textTheme.headlineMedium,
                       ),
                     ],
@@ -152,7 +152,7 @@ class _HomeDashboard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
-                    child: Text('I',
+                    child: Text('G',
                         style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
