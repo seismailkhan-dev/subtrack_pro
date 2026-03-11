@@ -1,10 +1,25 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:subtrack_pro/core/services/sharedpref_service.dart';
+import 'controllers/app_controller.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/app_router.dart';
+import 'firebase_options.dart';
+import 'core/services/notification_service.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SharedPrefService.init();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.firebaseOptions);
+
+  await NotificationService().init();
+  await NotificationService().requestPermissions();
+
+
+  Get.put(AppController(),permanent: true);
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -45,7 +60,7 @@ class _SubTrackProAppState extends State<SubTrackProApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'SubTrack Pro',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),

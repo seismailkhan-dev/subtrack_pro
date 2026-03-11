@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import '../../core/constants/app_constants.dart';
+import '../../core/services/format_service.dart';
+import '../../data/models/subcription_model.dart';
 import '../../core/theme/app_theme.dart';
 
 
@@ -152,6 +152,7 @@ class AppTextField extends StatelessWidget {
   final int maxLines;
   final VoidCallback? onTap;
   final bool readOnly;
+  final bool autofocus;
 
   const AppTextField({
     super.key,
@@ -166,6 +167,7 @@ class AppTextField extends StatelessWidget {
     this.maxLines = 1,
     this.onTap,
     this.readOnly = false,
+    this.autofocus = false,
   });
 
   @override
@@ -184,6 +186,7 @@ class AppTextField extends StatelessWidget {
           maxLines: maxLines,
           onTap: onTap,
           readOnly: readOnly,
+          autofocus: autofocus,
           style: theme.textTheme.bodyLarge?.copyWith(
             color: theme.colorScheme.onSurface,
           ),
@@ -200,65 +203,10 @@ class AppTextField extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 3. TOGGLE SWITCH ROW
-// ─────────────────────────────────────────────────────────────────────────────
 
-class AppToggleRow extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  final IconData? icon;
-
-  const AppToggleRow({
-    super.key,
-    required this.title,
-    this.subtitle,
-    required this.value,
-    required this.onChanged,
-    this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      children: [
-        if (icon != null) ...[
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, size: 18, color: AppColors.primary),
-          ),
-          const SizedBox(width: 12),
-        ],
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: theme.textTheme.titleSmall),
-              if (subtitle != null)
-                Text(subtitle!, style: theme.textTheme.bodySmall),
-            ],
-          ),
-        ),
-        Switch(value: value, onChanged: onChanged),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 4. SUBSCRIPTION CARD
-// ─────────────────────────────────────────────────────────────────────────────
 
 class SubscriptionCard extends StatelessWidget {
-  final SubscriptionModel subscription;
+  final SubscriptionDataModel subscription;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
 
@@ -273,10 +221,15 @@ class SubscriptionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final days = subscription.daysUntilRenewal;
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final billingDate = DateTime(subscription.nextBillingDate.year, subscription.nextBillingDate.month, subscription.nextBillingDate.day);
+    final days = billingDate.difference(todayDate).inDays;
+    final brandColor = subscription.brandColorAsColor;
+    final categoryColor = subscription.categoryColorAsColor;
 
     return Dismissible(
-      key: Key(subscription.id),
+      key: Key(subscription.subscriptionId),
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
@@ -312,23 +265,54 @@ class SubscriptionCard extends StatelessWidget {
           child: Row(
             children: [
               // Logo
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: subscription.brandColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Center(
-                  child: Text(
-                    subscription.logoLetter,
-                    style: TextStyle(
-                      color: subscription.brandColor,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: brandColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Center(
+                      child: Text(
+                        subscription.name.isNotEmpty
+                            ? subscription.name.substring(0, 1).toUpperCase()
+                            : '?',
+                        style: TextStyle(
+                          color: brandColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  if (subscription.isTrialActive)
+                    Positioned(
+                      top: -4,
+                      right: -4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: isDark ? AppColors.surfaceDark : Colors.white,
+                            width: 1,
+                          ),
+                        ),
+                        child: const Text(
+                          'TRIAL',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 7,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(width: 14),
               // Info
@@ -342,12 +326,12 @@ class SubscriptionCard extends StatelessWidget {
                     Row(
                       children: [
                         _CategoryChip(
-                          label: subscription.categoryLabel,
-                          color: subscription.categoryColor,
+                          label: subscription.category,
+                          color: categoryColor,
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          subscription.cycleLabel,
+                          subscription.billingCycle,
                           style: theme.textTheme.labelSmall,
                         ),
                       ],
@@ -366,7 +350,7 @@ class SubscriptionCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  _DaysBadge(days: days),
+                  _DaysBadge(days: days, isTrial: subscription.isTrialActive),
                 ],
               ),
             ],
@@ -388,7 +372,7 @@ class _CategoryChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -405,30 +389,34 @@ class _CategoryChip extends StatelessWidget {
 
 class _DaysBadge extends StatelessWidget {
   final int days;
-  const _DaysBadge({required this.days});
+  final bool isTrial;
+  const _DaysBadge({required this.days, this.isTrial = false});
 
   @override
   Widget build(BuildContext context) {
     Color color;
     String label;
-    if (days == 0) {
+    if (days < 0) {
       color = AppColors.danger;
-      label = 'Today';
+      label = isTrial ? 'Trial expired ${days.abs()}d ago' : 'Overdue by ${days.abs()}d';
+    } else if (days == 0) {
+      color = AppColors.danger;
+      label = isTrial ? 'Trial ends today' : 'Today';
     } else if (days == 1) {
       color = AppColors.danger;
-      label = 'Tomorrow';
+      label = isTrial ? 'Trial ends tomorrow' : 'Tomorrow';
     } else if (days <= 3) {
       color = AppColors.warning;
-      label = 'in $days days';
+      label = isTrial ? 'Trial ends in $days days' : 'in $days days';
     } else {
       color = AppColors.accent;
-      label = 'in $days days';
+      label = isTrial ? 'Trial ends in $days days' : 'in $days days';
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -585,7 +573,7 @@ class InsightCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -772,7 +760,7 @@ class SheetHandle extends StatelessWidget {
         height: 4,
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
-          color: AppColors.textTertiaryLight.withOpacity(0.4),
+          color: AppColors.textTertiaryLight.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(AppRadius.full),
         ),
       ),
@@ -785,7 +773,7 @@ class SheetHandle extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class SubLogo extends StatelessWidget {
-  final SubscriptionModel subscription;
+  final SubscriptionDataModel subscription;
   final double size;
 
   const SubLogo({super.key, required this.subscription, this.size = 52});
@@ -796,17 +784,17 @@ class SubLogo extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: subscription.brandColor.withOpacity(0.15),
+        color: Color(subscription.brandColor).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(size * 0.3),
         border: Border.all(
-          color: subscription.brandColor.withOpacity(0.3),
+          color: Color(subscription.brandColor).withValues(alpha: 0.3),
         ),
       ),
       child: Center(
         child: Text(
-          subscription.logoLetter,
+          FormatService.getLogoName(subscription.name),
           style: TextStyle(
-            color: subscription.brandColor,
+            color: Color(subscription.brandColor),
             fontSize: size * 0.38,
             fontWeight: FontWeight.w800,
           ),
@@ -858,7 +846,7 @@ class SettingsTile extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, size: 18, color: color),
@@ -1032,7 +1020,7 @@ class EmptyState extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 36, color: AppColors.primary),

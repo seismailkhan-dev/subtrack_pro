@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "616010288926",
+    "project_id": "subtrackpro-9ac16",
+    "storage_bucket": "subtrackpro-9ac16.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616010288926:android:e6d54cfefd0426344a830f",
+        "android_client_info": {
+          "package_name": "com.ikappsstudio.subtrackpro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD28plGtiwpDsYAml3zHFbmk0OX0QtACQE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
