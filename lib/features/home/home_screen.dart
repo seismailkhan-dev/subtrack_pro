@@ -226,7 +226,12 @@ class _HomeDashboard extends StatelessWidget {
                 if (getSubController.isFetchingHomeSub.value) {
                   return customLoader();
                 } else if (getSubController.homeSubListModel.isEmpty) {
-                  return Center(child: Text('Not Found'));
+                  return EmptyState(
+                    icon: Icons.inbox_outlined,
+                    title: 'No subscriptions found',
+                    body: 'Add a subscription to see it here.',
+                  );
+
                 } else {
                   // ✅ Return the ListView
                   return ListView.builder(
