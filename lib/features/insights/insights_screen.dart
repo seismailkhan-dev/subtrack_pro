@@ -122,7 +122,7 @@ class InsightsScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Pro Upsell
-              _ProUpsellCard(),
+              // _ProUpsellCard(),
             ],
           ),
         );

@@ -125,31 +125,32 @@ class _SplashScreenState extends State<SplashScreen>
                         child: child,
                       ),
                     ),
-                    child: Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 32,
-                            offset: const Offset(0, 12),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'S',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 44,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ),
+                    child: Image.asset('assets/images/app_icon.png',height: 100,width: 100,),
+                    // child: Container(
+                    //   width: 96,
+                    //   height: 96,
+                    //   decoration: BoxDecoration(
+                    //     color: Colors.white,
+                    //     borderRadius: BorderRadius.circular(28),
+                    //     boxShadow: [
+                    //       BoxShadow(
+                    //         color: Colors.black.withOpacity(0.2),
+                    //         blurRadius: 32,
+                    //         offset: const Offset(0, 12),
+                    //       ),
+                    //     ],
+                    //   ),
+                    //   child: const Center(
+                    //     child: Text(
+                    //       'S',
+                    //       style: TextStyle(
+                    //         color: AppColors.primary,
+                    //         fontSize: 44,
+                    //         fontWeight: FontWeight.w900,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                   ),
                   const SizedBox(height: 28),
                   // Text
