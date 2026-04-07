@@ -15,6 +15,8 @@ import '../analytics/analytics_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../insights/insights_screen.dart';
 import '../settings/settings_screen.dart';
+import '../../services/update_service.dart';
+import '../../widgets/update_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,6 +34,27 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     getSubController.fetchSubscriptions();
     analyticsController.fetchAnalyticsData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkUpdate();
+    });
+  }
+
+  Future<void> _checkUpdate() async {
+    final updateData = await UpdateService.checkForUpdate();
+    if (updateData == null) return;
+    
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: !(updateData['force_update'] ?? false),
+        builder: (context) => UpdateDialog(
+          title: updateData['update_title'] ?? 'New Update Available',
+          features: updateData['update_features'] ?? '',
+          forceUpdate: updateData['force_update'] ?? false,
+          onLater: () {},
+        ),
+      );
+    }
   }
 
   int _tabIndex = 0;
